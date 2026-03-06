@@ -109,9 +109,7 @@ func (h *GOrderORM) Page(ctx echo.Context) error {
 				shedules[i] = v[i]
 				//shedules[i] = forms.Shedule(ResourceType: v[i].Resource_id, Begin: v[i].Begin, End: v[i].End)
 			}
-		} //else {
-		//	fmt.Println(err)
-		//}
+		}
 
 		tr, err := h.orm.Trip.Query().Where(trip.ID(tid)).Only(ctx.Request().Context())
 		guideCount, errGuide := h.orm.Guide.Query().Where(guide.Active(true)).Count(ctx.Request().Context())
