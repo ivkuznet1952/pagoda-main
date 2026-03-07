@@ -10,6 +10,7 @@ import (
 	"github.com/mikestefanello/pagoda/ent"
 	"github.com/mikestefanello/pagoda/ent/guide"
 	"github.com/mikestefanello/pagoda/ent/shedule"
+	"github.com/mikestefanello/pagoda/ent/transport"
 	"github.com/mikestefanello/pagoda/ent/trip"
 	"github.com/mikestefanello/pagoda/pkg/form"
 	"github.com/mikestefanello/pagoda/pkg/routenames"
@@ -80,38 +81,55 @@ func (h *GOrderORM) Page(ctx echo.Context) error {
 	if tid > 0 {
 
 		now := time.Now()
+		tr, err := h.orm.Trip.Query().Where(trip.ID(tid)).Only(ctx.Request().Context())
 
-		//res, err := h.orm.Shedule.Query().Where(shedule.ResourceTypeEQ(0)).Only(ctx.Request().Context())
-
-		// create trip shedule for current date
-		//if err == nil {
-		//fmt.Println("############f TouristCount: ", f.TouristCount)
-		//}
 		var v []struct {
 			Resource_type int
 			Begin         time.Time
 			End           time.Time
 		}
 
-		err := h.orm.Shedule.Query().
+		errShedule := h.orm.Shedule.Query().
 			Where(
 				shedule.BeginGT(now),
 			).
 			Unique(true).
 			Select(shedule.FieldResourceType, shedule.FieldBegin, shedule.FieldEnd).Scan(ctx.Request().Context(), &v)
-		//shedules, err := h.orm.Shedule.Query().Where(shedule.BeginGT(now)).Unique(true).Select(shedule.FieldResourceID).Scan(ctx.Request().Context(), &v)
-		//.Unique(true).All(ctx.Request().Context())
+
 		shedules := make([]forms.Shedule, len(v))
-		if err == nil {
+		if errShedule == nil {
 			for i := range v {
-				//_ = i
-				//fmt.Println(forms.Shedules[i])
 				shedules[i] = v[i]
-				//shedules[i] = forms.Shedule(ResourceType: v[i].Resource_id, Begin: v[i].Begin, End: v[i].End)
 			}
 		}
 
-		tr, err := h.orm.Trip.Query().Where(trip.ID(tid)).Only(ctx.Request().Context())
+		var t []struct {
+			Id        int
+			Name      string
+			Max_count int
+			Min_count int
+		}
+		_ = t
+
+		errTransport := h.orm.Transport.Query().
+			Where(
+				transport.Active(true),
+			).
+			Unique(true).
+			Select(transport.FieldID, transport.FieldName, transport.FieldMinCount, transport.FieldMaxCount).Scan(ctx.Request().Context(), &t)
+		transports := make([]forms.Transport, len(t))
+		_ = transports
+		if errTransport == nil {
+			for i := range t {
+				_ = i
+				transports[i] = t[i]
+			}
+		}
+		if errTransport != nil {
+			fmt.Println("ERR_TRANSPORT: " + errTransport.Error())
+			tr = nil
+		}
+
 		guideCount, errGuide := h.orm.Guide.Query().Where(guide.Active(true)).Count(ctx.Request().Context())
 
 		// create trip shedule for current date
@@ -123,7 +141,7 @@ func (h *GOrderORM) Page(ctx echo.Context) error {
 			fmt.Println("ERR_GUIDE: " + errGuide.Error())
 			tr = nil
 		}
-		//println("/////:" + tr.Name)
+
 		if tr != nil {
 			m0 := int(now.Month())
 			m1 := m0 + 1

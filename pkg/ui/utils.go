@@ -1,5 +1,8 @@
 package ui
 
+const GUIDE_TYPE = 0
+const TRANSPORT_TYPE = 1
+
 func MonthName(monthInt int) string {
 	switch monthInt {
 	case 1:

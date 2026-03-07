@@ -5,6 +5,7 @@ import (
 
 	"github.com/labstack/echo/v4"
 	"github.com/mikestefanello/pagoda/ent"
+	"github.com/mikestefanello/pagoda/ent/trip"
 	"github.com/mikestefanello/pagoda/pkg/pager"
 	"github.com/mikestefanello/pagoda/pkg/routenames"
 	"github.com/mikestefanello/pagoda/pkg/services"
@@ -48,7 +49,7 @@ func (h *Pages) fetchTrips(pager *pager.Pager) []models.Trip {
 	////	All(ctx.Request().Context())
 	//	All(context.Background())
 
-	r, err := h.orm.Trip.Query().All(context.Background())
+	r, err := h.orm.Trip.Query().Where(trip.Active(true)).All(context.Background())
 
 	//fmt.Println(len(r))
 	if err != nil {

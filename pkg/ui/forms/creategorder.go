@@ -19,8 +19,7 @@ import (
 
 type (
 	GOrderForm struct {
-		Name string
-		//TouristCount int    `form:"touristcount" `
+		Name  string
 		Day   string `form:"day" validate:"required"`
 		Begin string `form:"begin" validate:"required"`
 		form.Submission
@@ -30,6 +29,13 @@ type (
 		Resource_type int
 		Begin         time.Time
 		End           time.Time
+	}
+
+	Transport struct {
+		Id        int
+		Name      string
+		Max_count int
+		Min_count int
 	}
 
 	GOrderParam struct {
@@ -156,10 +162,7 @@ func (f *GOrderForm) Render(r *ui.Request, trip *GOrderParam) Node {
 			Div(
 				InputFieldDay(
 					InputFieldParamsDay{
-						//Form:      f,
-						//FormField: "day",
 						Name: "Day",
-						//Value:     f.Day,
 					}),
 				Style("background-color: green; "),
 			),
@@ -167,10 +170,7 @@ func (f *GOrderForm) Render(r *ui.Request, trip *GOrderParam) Node {
 			Div(
 				InputFieldBegin(
 					InputFieldParamsBegin{
-						//Form:      f,
-						//FormField: "Begin",
 						Name: "Begin",
-						//Value:     f.Begin,
 					}),
 				Style("background-color: blue; "),
 			),
@@ -235,7 +235,7 @@ func initCalendarDays(shedules []Shedule, touristCount int, trip ent.Trip, today
 				b1 := time.Date(year, time.Month(month), days[i].Day, tripDurations[j].begin.Hour(), tripDurations[j].begin.Minute(), 0, 0, time.UTC)
 				e1 := time.Date(year, time.Month(month), days[i].Day, tripDurations[j].end.Hour(), tripDurations[j].end.Minute(), 0, 0, time.UTC)
 
-				hasFreeGuide := hasFreeResourceForDate(shedules, 0, guideCount, b1, e1)
+				hasFreeGuide := hasFreeResourceForDate(shedules, ui.GUIDE_TYPE, guideCount, b1, e1)
 				if hasFreeGuide {
 					hourDuration := HourDuration{H0: b1.Hour(), M0: b1.Minute(), H1: e1.Hour(), M1: e1.Minute()}
 					days[i].HourDurations = append(days[i].HourDurations, hourDuration)

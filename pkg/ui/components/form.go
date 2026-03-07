@@ -24,19 +24,13 @@ type (
 	}
 
 	InputFieldParamsBegin struct {
-		//Form      form.Form
-		//FormField string
 		Name  string
 		Label string
-		//Value     string
 	}
 
 	InputFieldParamsDay struct {
-		Form      form.Form
-		FormField string
-		Name      string
-		Label     string
-		Value     string
+		Name  string
+		Label string
 	}
 
 	FileFieldParams struct {
@@ -196,7 +190,7 @@ func MonthChooser(el MonthChooserOptionsParams) Node {
 				Value(opt.Value),
 				Class("radio mr-1 "), //+formFieldStatusClass(el.Form, el.FormField)),
 				If(strconv.Itoa(el.Value) == opt.Value, Checked()),
-				//Attr("x-model", "checked_month"),
+				x.On("click", "if (checked_month != "+opt.Value+") {order_day=''};"),
 				x.Model("checked_month"),
 			),
 			Label(
