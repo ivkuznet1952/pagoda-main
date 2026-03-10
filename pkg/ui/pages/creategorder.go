@@ -53,7 +53,23 @@ func GOrderUs(ctx echo.Context, form *forms.GOrderForm, trip *forms.GOrderParam)
 			return form.Render(r, trip)
 		}),
 		Iff(form.IsDone(), func() Node {
-			//return form.Render(r)
+
+			//fmt.Println(trip)
+			//fmt.Println("#################:" + strconv.Itoa(len(trip.Transports)))
+			//transports := ui.Filter(trip.Transports, func(transport forms.Transport) bool {
+			//	id, err := strconv.Atoi(form.Transport)
+			//	fmt.Println("#######: " + form.Transport)
+			//	if err == nil {
+			//		return transport.Id == id
+			//	} else {
+			//		return false
+			//	}
+			//})
+			//transportName := "way"
+			//fmt.Println(transports)
+			//if len(transports) == 1 {
+			//	transportName = transports[0].Name
+			//}
 			return Badge(ColorSuccess, form.Tourists+" "+form.Day+" "+form.Begin+" "+form.Transport)
 		}),
 

@@ -8,6 +8,19 @@ import (
 )
 
 var (
+	// CostsColumns holds the columns for the "costs" table.
+	CostsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "cost", Type: field.TypeInt, Default: 0},
+		{Name: "trip_id", Type: field.TypeInt, Default: 0},
+		{Name: "transport_id", Type: field.TypeInt, Default: 0},
+	}
+	// CostsTable holds the schema information for the "costs" table.
+	CostsTable = &schema.Table{
+		Name:       "costs",
+		Columns:    CostsColumns,
+		PrimaryKey: []*schema.Column{CostsColumns[0]},
+	}
 	// CustomersColumns holds the columns for the "customers" table.
 	CustomersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -184,6 +197,7 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
+		CostsTable,
 		CustomersTable,
 		GlogsTable,
 		GordersTable,

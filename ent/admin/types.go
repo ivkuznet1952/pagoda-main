@@ -3,6 +3,20 @@ package admin
 
 import "time"
 
+type Cost struct {
+	Cost        *int `form:"cost"`
+	TripID      *int `form:"trip_id"`
+	TransportID *int `form:"transport_id"`
+}
+
+func (e *Cost) GetName() string {
+	return NameCost
+}
+
+func (e *Cost) GetSchema() []*FieldSchema {
+	return fieldsCost
+}
+
 type Customer struct {
 	Firstname string     `form:"firstname"`
 	Lastname  string     `form:"lastname"`
@@ -185,6 +199,7 @@ type EntityType interface {
 }
 
 var entityTypes = []EntityType{
+	&Cost{},
 	&Customer{},
 	&GLog{},
 	&GOrder{},

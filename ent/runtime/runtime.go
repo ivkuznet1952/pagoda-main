@@ -5,6 +5,7 @@ package runtime
 import (
 	"time"
 
+	"github.com/mikestefanello/pagoda/ent/cost"
 	"github.com/mikestefanello/pagoda/ent/customer"
 	"github.com/mikestefanello/pagoda/ent/glog"
 	"github.com/mikestefanello/pagoda/ent/gorder"
@@ -22,6 +23,20 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
+	costFields := schema.Cost{}.Fields()
+	_ = costFields
+	// costDescCost is the schema descriptor for cost field.
+	costDescCost := costFields[0].Descriptor()
+	// cost.DefaultCost holds the default value on creation for the cost field.
+	cost.DefaultCost = costDescCost.Default.(int)
+	// costDescTripID is the schema descriptor for trip_id field.
+	costDescTripID := costFields[1].Descriptor()
+	// cost.DefaultTripID holds the default value on creation for the trip_id field.
+	cost.DefaultTripID = costDescTripID.Default.(int)
+	// costDescTransportID is the schema descriptor for transport_id field.
+	costDescTransportID := costFields[2].Descriptor()
+	// cost.DefaultTransportID holds the default value on creation for the transport_id field.
+	cost.DefaultTransportID = costDescTransportID.Default.(int)
 	customerFields := schema.Customer{}.Fields()
 	_ = customerFields
 	// customerDescFirstname is the schema descriptor for firstname field.

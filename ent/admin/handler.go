@@ -11,6 +11,7 @@ import (
 	"github.com/labstack/echo/v4"
 
 	"github.com/mikestefanello/pagoda/ent"
+	"github.com/mikestefanello/pagoda/ent/cost"
 	"github.com/mikestefanello/pagoda/ent/customer"
 	"github.com/mikestefanello/pagoda/ent/glog"
 	"github.com/mikestefanello/pagoda/ent/gorder"
@@ -40,6 +41,8 @@ func NewHandler(client *ent.Client, cfg HandlerConfig) *Handler {
 
 func (h *Handler) Create(ctx echo.Context, entityType EntityType) error {
 	switch entityType.(type) {
+	case *Cost:
+		return h.CostCreate(ctx)
 	case *Customer:
 		return h.CustomerCreate(ctx)
 	case *GLog:
@@ -67,6 +70,8 @@ func (h *Handler) Create(ctx echo.Context, entityType EntityType) error {
 
 func (h *Handler) Get(ctx echo.Context, entityType EntityType, id int) (url.Values, error) {
 	switch entityType.(type) {
+	case *Cost:
+		return h.CostGet(ctx, id)
 	case *Customer:
 		return h.CustomerGet(ctx, id)
 	case *GLog:
@@ -94,6 +99,8 @@ func (h *Handler) Get(ctx echo.Context, entityType EntityType, id int) (url.Valu
 
 func (h *Handler) Delete(ctx echo.Context, entityType EntityType, id int) error {
 	switch entityType.(type) {
+	case *Cost:
+		return h.CostDelete(ctx, id)
 	case *Customer:
 		return h.CustomerDelete(ctx, id)
 	case *GLog:
@@ -121,6 +128,8 @@ func (h *Handler) Delete(ctx echo.Context, entityType EntityType, id int) error 
 
 func (h *Handler) Update(ctx echo.Context, entityType EntityType, id int) error {
 	switch entityType.(type) {
+	case *Cost:
+		return h.CostUpdate(ctx, id)
 	case *Customer:
 		return h.CustomerUpdate(ctx, id)
 	case *GLog:
@@ -148,6 +157,8 @@ func (h *Handler) Update(ctx echo.Context, entityType EntityType, id int) error 
 
 func (h *Handler) List(ctx echo.Context, entityType EntityType) (*EntityList, error) {
 	switch entityType.(type) {
+	case *Cost:
+		return h.CostList(ctx)
 	case *Customer:
 		return h.CustomerList(ctx)
 	case *GLog:
@@ -171,6 +182,116 @@ func (h *Handler) List(ctx echo.Context, entityType EntityType) (*EntityList, er
 	default:
 		return nil, fmt.Errorf("unsupported entity type: %s", entityType)
 	}
+}
+
+func (h *Handler) CostCreate(ctx echo.Context) error {
+	var payload Cost
+	if err := h.bind(ctx, &payload); err != nil {
+		return err
+	}
+
+	op := h.client.Cost.Create()
+	if payload.Cost != nil {
+		op.SetCost(*payload.Cost)
+	}
+	if payload.TripID != nil {
+		op.SetTripID(*payload.TripID)
+	}
+	if payload.TransportID != nil {
+		op.SetTransportID(*payload.TransportID)
+	}
+	_, err := op.Save(ctx.Request().Context())
+	return err
+}
+
+func (h *Handler) CostUpdate(ctx echo.Context, id int) error {
+	entity, err := h.client.Cost.Get(ctx.Request().Context(), id)
+	if err != nil {
+		return err
+	}
+
+	var payload Cost
+	if err = h.bind(ctx, &payload); err != nil {
+		return err
+	}
+
+	op := entity.Update()
+	if payload.Cost == nil {
+		var empty int
+		op.SetCost(empty)
+	} else {
+		op.SetCost(*payload.Cost)
+	}
+	if payload.TripID == nil {
+		var empty int
+		op.SetTripID(empty)
+	} else {
+		op.SetTripID(*payload.TripID)
+	}
+	if payload.TransportID == nil {
+		var empty int
+		op.SetTransportID(empty)
+	} else {
+		op.SetTransportID(*payload.TransportID)
+	}
+	_, err = op.Save(ctx.Request().Context())
+	return err
+}
+
+func (h *Handler) CostDelete(ctx echo.Context, id int) error {
+	return h.client.Cost.DeleteOneID(id).
+		Exec(ctx.Request().Context())
+}
+
+func (h *Handler) CostList(ctx echo.Context) (*EntityList, error) {
+	page, offset := h.getPageAndOffset(ctx)
+	res, err := h.client.Cost.
+		Query().
+		Limit(h.Config.ItemsPerPage + 1).
+		Offset(offset).
+		Order(cost.ByID(sql.OrderDesc())).
+		All(ctx.Request().Context())
+
+	if err != nil {
+		return nil, err
+	}
+
+	list := &EntityList{
+		Columns: []string{
+			"Cost",
+			"Trip ID",
+			"Transport ID",
+		},
+		Entities:    make([]EntityValues, 0, len(res)),
+		Page:        page,
+		HasNextPage: len(res) > h.Config.ItemsPerPage,
+	}
+
+	for i := 0; i <= len(res)-1; i++ {
+		list.Entities = append(list.Entities, EntityValues{
+			ID: res[i].ID,
+			Values: []string{
+				fmt.Sprint(res[i].Cost),
+				fmt.Sprint(res[i].TripID),
+				fmt.Sprint(res[i].TransportID),
+			},
+		})
+	}
+
+	return list, err
+}
+
+func (h *Handler) CostGet(ctx echo.Context, id int) (url.Values, error) {
+	entity, err := h.client.Cost.Get(ctx.Request().Context(), id)
+	if err != nil {
+		return nil, err
+	}
+
+	v := url.Values{}
+	v.Set("cost", fmt.Sprint(entity.Cost))
+	v.Set("trip_id", fmt.Sprint(entity.TripID))
+	v.Set("transport_id", fmt.Sprint(entity.TransportID))
+	return v, err
 }
 
 func (h *Handler) CustomerCreate(ctx echo.Context) error {

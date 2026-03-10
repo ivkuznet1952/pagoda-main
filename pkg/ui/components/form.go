@@ -345,7 +345,7 @@ func Calendar(el OptionsParamsCalendar) Node {
 					Strong(
 						x.Bind("style", "item.active && { color: 'green'}"),
 						x.Text("item.name"),
-						x.On("click", "order_transport = item.name; "+
+						x.On("click", "order_transport = item.id; "+
 							" for (let i = 0; i < transport_list.length; i++) {"+
 							" transport_list[i].active = false;  "+
 							"}; "+

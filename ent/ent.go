@@ -12,6 +12,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
+	"github.com/mikestefanello/pagoda/ent/cost"
 	"github.com/mikestefanello/pagoda/ent/customer"
 	"github.com/mikestefanello/pagoda/ent/glog"
 	"github.com/mikestefanello/pagoda/ent/gorder"
@@ -82,6 +83,7 @@ var (
 func checkColumn(t, c string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
+			cost.Table:          cost.ValidColumn,
 			customer.Table:      customer.ValidColumn,
 			glog.Table:          glog.ValidColumn,
 			gorder.Table:        gorder.ValidColumn,

@@ -9,6 +9,18 @@ import (
 	"github.com/mikestefanello/pagoda/ent"
 )
 
+// The CostFunc type is an adapter to allow the use of ordinary
+// function as Cost mutator.
+type CostFunc func(context.Context, *ent.CostMutation) (ent.Value, error)
+
+// Mutate calls f(ctx, m).
+func (f CostFunc) Mutate(ctx context.Context, m ent.Mutation) (ent.Value, error) {
+	if mv, ok := m.(*ent.CostMutation); ok {
+		return f(ctx, mv)
+	}
+	return nil, fmt.Errorf("unexpected mutation type %T. expect *ent.CostMutation", m)
+}
+
 // The CustomerFunc type is an adapter to allow the use of ordinary
 // function as Customer mutator.
 type CustomerFunc func(context.Context, *ent.CustomerMutation) (ent.Value, error)

@@ -169,11 +169,6 @@ func (h *GOrderORM) Page(ctx echo.Context) error {
 			return pages.GOrderUs(ctx, f, &t)
 		}
 	}
-
-	//if tid == 0 {
-	//	return pages.GOrderUs(ctx, f, nil)
-	//}
-
 	return pages.GOrderUs(ctx, f, nil)
 }
 
