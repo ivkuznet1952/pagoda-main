@@ -8,19 +8,6 @@ import (
 )
 
 var (
-	// CostsColumns holds the columns for the "costs" table.
-	CostsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeInt, Increment: true},
-		{Name: "cost", Type: field.TypeInt, Default: 0},
-		{Name: "trip_id", Type: field.TypeInt, Default: 0},
-		{Name: "transport_id", Type: field.TypeInt, Default: 0},
-	}
-	// CostsTable holds the schema information for the "costs" table.
-	CostsTable = &schema.Table{
-		Name:       "costs",
-		Columns:    CostsColumns,
-		PrimaryKey: []*schema.Column{CostsColumns[0]},
-	}
 	// CustomersColumns holds the columns for the "customers" table.
 	CustomersColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeInt, Increment: true},
@@ -40,6 +27,19 @@ var (
 		Name:       "customers",
 		Columns:    CustomersColumns,
 		PrimaryKey: []*schema.Column{CustomersColumns[0]},
+	}
+	// GcostsColumns holds the columns for the "gcosts" table.
+	GcostsColumns = []*schema.Column{
+		{Name: "id", Type: field.TypeInt, Increment: true},
+		{Name: "cost", Type: field.TypeInt, Default: 0},
+		{Name: "trip_id", Type: field.TypeInt, Default: 0},
+		{Name: "transport_id", Type: field.TypeInt, Default: 0},
+	}
+	// GcostsTable holds the schema information for the "gcosts" table.
+	GcostsTable = &schema.Table{
+		Name:       "gcosts",
+		Columns:    GcostsColumns,
+		PrimaryKey: []*schema.Column{GcostsColumns[0]},
 	}
 	// GlogsColumns holds the columns for the "glogs" table.
 	GlogsColumns = []*schema.Column{
@@ -197,8 +197,8 @@ var (
 	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
-		CostsTable,
 		CustomersTable,
+		GcostsTable,
 		GlogsTable,
 		GordersTable,
 		GuidesTable,

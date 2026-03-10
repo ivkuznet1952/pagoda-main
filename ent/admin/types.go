@@ -3,20 +3,6 @@ package admin
 
 import "time"
 
-type Cost struct {
-	Cost        *int `form:"cost"`
-	TripID      *int `form:"trip_id"`
-	TransportID *int `form:"transport_id"`
-}
-
-func (e *Cost) GetName() string {
-	return NameCost
-}
-
-func (e *Cost) GetSchema() []*FieldSchema {
-	return fieldsCost
-}
-
 type Customer struct {
 	Firstname string     `form:"firstname"`
 	Lastname  string     `form:"lastname"`
@@ -36,6 +22,20 @@ func (e *Customer) GetName() string {
 
 func (e *Customer) GetSchema() []*FieldSchema {
 	return fieldsCustomer
+}
+
+type GCost struct {
+	Cost        *int `form:"cost"`
+	TripID      *int `form:"trip_id"`
+	TransportID *int `form:"transport_id"`
+}
+
+func (e *GCost) GetName() string {
+	return NameGCost
+}
+
+func (e *GCost) GetSchema() []*FieldSchema {
+	return fieldsGCost
 }
 
 type GLog struct {
@@ -199,8 +199,8 @@ type EntityType interface {
 }
 
 var entityTypes = []EntityType{
-	&Cost{},
 	&Customer{},
+	&GCost{},
 	&GLog{},
 	&GOrder{},
 	&Guide{},

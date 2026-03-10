@@ -18,35 +18,6 @@ type FieldSchema struct {
 	Enums     []string
 }
 
-const NameCost = "Cost"
-
-var fieldsCost = []*FieldSchema{
-	{
-		Name:      "cost",
-		Type:      field.TypeInt,
-		Optional:  false,
-		Immutable: false,
-		Sensitive: false,
-		Enums:     nil,
-	},
-	{
-		Name:      "trip_id",
-		Type:      field.TypeInt,
-		Optional:  false,
-		Immutable: false,
-		Sensitive: false,
-		Enums:     nil,
-	},
-	{
-		Name:      "transport_id",
-		Type:      field.TypeInt,
-		Optional:  false,
-		Immutable: false,
-		Sensitive: false,
-		Enums:     nil,
-	},
-}
-
 const NameCustomer = "Customer"
 
 var fieldsCustomer = []*FieldSchema{
@@ -124,6 +95,35 @@ var fieldsCustomer = []*FieldSchema{
 	},
 	{
 		Name:      "created_by",
+		Type:      field.TypeInt,
+		Optional:  false,
+		Immutable: false,
+		Sensitive: false,
+		Enums:     nil,
+	},
+}
+
+const NameGCost = "GCost"
+
+var fieldsGCost = []*FieldSchema{
+	{
+		Name:      "cost",
+		Type:      field.TypeInt,
+		Optional:  false,
+		Immutable: false,
+		Sensitive: false,
+		Enums:     nil,
+	},
+	{
+		Name:      "trip_id",
+		Type:      field.TypeInt,
+		Optional:  false,
+		Immutable: false,
+		Sensitive: false,
+		Enums:     nil,
+	},
+	{
+		Name:      "transport_id",
 		Type:      field.TypeInt,
 		Optional:  false,
 		Immutable: false,

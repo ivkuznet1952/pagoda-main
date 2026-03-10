@@ -12,10 +12,10 @@ import (
 // Tx is a transactional client that is created by calling Client.Tx().
 type Tx struct {
 	config
-	// Cost is the client for interacting with the Cost builders.
-	Cost *CostClient
 	// Customer is the client for interacting with the Customer builders.
 	Customer *CustomerClient
+	// GCost is the client for interacting with the GCost builders.
+	GCost *GCostClient
 	// GLog is the client for interacting with the GLog builders.
 	GLog *GLogClient
 	// GOrder is the client for interacting with the GOrder builders.
@@ -165,8 +165,8 @@ func (tx *Tx) Client() *Client {
 }
 
 func (tx *Tx) init() {
-	tx.Cost = NewCostClient(tx.config)
 	tx.Customer = NewCustomerClient(tx.config)
+	tx.GCost = NewGCostClient(tx.config)
 	tx.GLog = NewGLogClient(tx.config)
 	tx.GOrder = NewGOrderClient(tx.config)
 	tx.Guide = NewGuideClient(tx.config)
@@ -185,7 +185,7 @@ func (tx *Tx) init() {
 // of them in order to commit or rollback the transaction.
 //
 // If a closed transaction is embedded in one of the generated entities, and the entity
-// applies a query, for example: Cost.QueryXXX(), the query will be executed
+// applies a query, for example: Customer.QueryXXX(), the query will be executed
 // through the driver which created this transaction.
 //
 // Note that txDriver is not goroutine safe.

@@ -6,11 +6,11 @@ import (
 	"entgo.io/ent/dialect/sql"
 )
 
-// Cost is the predicate function for cost builders.
-type Cost func(*sql.Selector)
-
 // Customer is the predicate function for customer builders.
 type Customer func(*sql.Selector)
+
+// GCost is the predicate function for gcost builders.
+type GCost func(*sql.Selector)
 
 // GLog is the predicate function for glog builders.
 type GLog func(*sql.Selector)

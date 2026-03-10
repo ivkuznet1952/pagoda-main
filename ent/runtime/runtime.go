@@ -5,8 +5,8 @@ package runtime
 import (
 	"time"
 
-	"github.com/mikestefanello/pagoda/ent/cost"
 	"github.com/mikestefanello/pagoda/ent/customer"
+	"github.com/mikestefanello/pagoda/ent/gcost"
 	"github.com/mikestefanello/pagoda/ent/glog"
 	"github.com/mikestefanello/pagoda/ent/gorder"
 	"github.com/mikestefanello/pagoda/ent/guide"
@@ -23,20 +23,6 @@ import (
 // (default values, validators, hooks and policies) and stitches it
 // to their package variables.
 func init() {
-	costFields := schema.Cost{}.Fields()
-	_ = costFields
-	// costDescCost is the schema descriptor for cost field.
-	costDescCost := costFields[0].Descriptor()
-	// cost.DefaultCost holds the default value on creation for the cost field.
-	cost.DefaultCost = costDescCost.Default.(int)
-	// costDescTripID is the schema descriptor for trip_id field.
-	costDescTripID := costFields[1].Descriptor()
-	// cost.DefaultTripID holds the default value on creation for the trip_id field.
-	cost.DefaultTripID = costDescTripID.Default.(int)
-	// costDescTransportID is the schema descriptor for transport_id field.
-	costDescTransportID := costFields[2].Descriptor()
-	// cost.DefaultTransportID holds the default value on creation for the transport_id field.
-	cost.DefaultTransportID = costDescTransportID.Default.(int)
 	customerFields := schema.Customer{}.Fields()
 	_ = customerFields
 	// customerDescFirstname is the schema descriptor for firstname field.
@@ -63,6 +49,20 @@ func init() {
 	customerDescCreatedBy := customerFields[9].Descriptor()
 	// customer.DefaultCreatedBy holds the default value on creation for the created_by field.
 	customer.DefaultCreatedBy = customerDescCreatedBy.Default.(int)
+	gcostFields := schema.GCost{}.Fields()
+	_ = gcostFields
+	// gcostDescCost is the schema descriptor for cost field.
+	gcostDescCost := gcostFields[0].Descriptor()
+	// gcost.DefaultCost holds the default value on creation for the cost field.
+	gcost.DefaultCost = gcostDescCost.Default.(int)
+	// gcostDescTripID is the schema descriptor for trip_id field.
+	gcostDescTripID := gcostFields[1].Descriptor()
+	// gcost.DefaultTripID holds the default value on creation for the trip_id field.
+	gcost.DefaultTripID = gcostDescTripID.Default.(int)
+	// gcostDescTransportID is the schema descriptor for transport_id field.
+	gcostDescTransportID := gcostFields[2].Descriptor()
+	// gcost.DefaultTransportID holds the default value on creation for the transport_id field.
+	gcost.DefaultTransportID = gcostDescTransportID.Default.(int)
 	glogFields := schema.GLog{}.Fields()
 	_ = glogFields
 	// glogDescAction is the schema descriptor for action field.

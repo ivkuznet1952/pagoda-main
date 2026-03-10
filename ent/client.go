@@ -15,8 +15,8 @@ import (
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
-	"github.com/mikestefanello/pagoda/ent/cost"
 	"github.com/mikestefanello/pagoda/ent/customer"
+	"github.com/mikestefanello/pagoda/ent/gcost"
 	"github.com/mikestefanello/pagoda/ent/glog"
 	"github.com/mikestefanello/pagoda/ent/gorder"
 	"github.com/mikestefanello/pagoda/ent/guide"
@@ -33,10 +33,10 @@ type Client struct {
 	config
 	// Schema is the client for creating, migrating and dropping schema.
 	Schema *migrate.Schema
-	// Cost is the client for interacting with the Cost builders.
-	Cost *CostClient
 	// Customer is the client for interacting with the Customer builders.
 	Customer *CustomerClient
+	// GCost is the client for interacting with the GCost builders.
+	GCost *GCostClient
 	// GLog is the client for interacting with the GLog builders.
 	GLog *GLogClient
 	// GOrder is the client for interacting with the GOrder builders.
@@ -66,8 +66,8 @@ func NewClient(opts ...Option) *Client {
 
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
-	c.Cost = NewCostClient(c.config)
 	c.Customer = NewCustomerClient(c.config)
+	c.GCost = NewGCostClient(c.config)
 	c.GLog = NewGLogClient(c.config)
 	c.GOrder = NewGOrderClient(c.config)
 	c.Guide = NewGuideClient(c.config)
@@ -169,8 +169,8 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	return &Tx{
 		ctx:           ctx,
 		config:        cfg,
-		Cost:          NewCostClient(cfg),
 		Customer:      NewCustomerClient(cfg),
+		GCost:         NewGCostClient(cfg),
 		GLog:          NewGLogClient(cfg),
 		GOrder:        NewGOrderClient(cfg),
 		Guide:         NewGuideClient(cfg),
@@ -199,8 +199,8 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	return &Tx{
 		ctx:           ctx,
 		config:        cfg,
-		Cost:          NewCostClient(cfg),
 		Customer:      NewCustomerClient(cfg),
+		GCost:         NewGCostClient(cfg),
 		GLog:          NewGLogClient(cfg),
 		GOrder:        NewGOrderClient(cfg),
 		Guide:         NewGuideClient(cfg),
@@ -216,7 +216,7 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 // Debug returns a new debug-client. It's used to get verbose logging on specific operations.
 //
 //	client.Debug().
-//		Cost.
+//		Customer.
 //		Query().
 //		Count(ctx)
 func (c *Client) Debug() *Client {
@@ -239,7 +239,7 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	for _, n := range []interface{ Use(...Hook) }{
-		c.Cost, c.Customer, c.GLog, c.GOrder, c.Guide, c.OrderNumber, c.PasswordToken,
+		c.Customer, c.GCost, c.GLog, c.GOrder, c.Guide, c.OrderNumber, c.PasswordToken,
 		c.Shedule, c.Transport, c.Trip, c.User,
 	} {
 		n.Use(hooks...)
@@ -250,7 +250,7 @@ func (c *Client) Use(hooks ...Hook) {
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	for _, n := range []interface{ Intercept(...Interceptor) }{
-		c.Cost, c.Customer, c.GLog, c.GOrder, c.Guide, c.OrderNumber, c.PasswordToken,
+		c.Customer, c.GCost, c.GLog, c.GOrder, c.Guide, c.OrderNumber, c.PasswordToken,
 		c.Shedule, c.Transport, c.Trip, c.User,
 	} {
 		n.Intercept(interceptors...)
@@ -260,10 +260,10 @@ func (c *Client) Intercept(interceptors ...Interceptor) {
 // Mutate implements the ent.Mutator interface.
 func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
-	case *CostMutation:
-		return c.Cost.mutate(ctx, m)
 	case *CustomerMutation:
 		return c.Customer.mutate(ctx, m)
+	case *GCostMutation:
+		return c.GCost.mutate(ctx, m)
 	case *GLogMutation:
 		return c.GLog.mutate(ctx, m)
 	case *GOrderMutation:
@@ -284,139 +284,6 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 		return c.User.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("ent: unknown mutation type %T", m)
-	}
-}
-
-// CostClient is a client for the Cost schema.
-type CostClient struct {
-	config
-}
-
-// NewCostClient returns a client for the Cost from the given config.
-func NewCostClient(c config) *CostClient {
-	return &CostClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `cost.Hooks(f(g(h())))`.
-func (c *CostClient) Use(hooks ...Hook) {
-	c.hooks.Cost = append(c.hooks.Cost, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `cost.Intercept(f(g(h())))`.
-func (c *CostClient) Intercept(interceptors ...Interceptor) {
-	c.inters.Cost = append(c.inters.Cost, interceptors...)
-}
-
-// Create returns a builder for creating a Cost entity.
-func (c *CostClient) Create() *CostCreate {
-	mutation := newCostMutation(c.config, OpCreate)
-	return &CostCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of Cost entities.
-func (c *CostClient) CreateBulk(builders ...*CostCreate) *CostCreateBulk {
-	return &CostCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *CostClient) MapCreateBulk(slice any, setFunc func(*CostCreate, int)) *CostCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &CostCreateBulk{err: fmt.Errorf("calling to CostClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*CostCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &CostCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for Cost.
-func (c *CostClient) Update() *CostUpdate {
-	mutation := newCostMutation(c.config, OpUpdate)
-	return &CostUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *CostClient) UpdateOne(_m *Cost) *CostUpdateOne {
-	mutation := newCostMutation(c.config, OpUpdateOne, withCost(_m))
-	return &CostUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *CostClient) UpdateOneID(id int) *CostUpdateOne {
-	mutation := newCostMutation(c.config, OpUpdateOne, withCostID(id))
-	return &CostUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for Cost.
-func (c *CostClient) Delete() *CostDelete {
-	mutation := newCostMutation(c.config, OpDelete)
-	return &CostDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *CostClient) DeleteOne(_m *Cost) *CostDeleteOne {
-	return c.DeleteOneID(_m.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *CostClient) DeleteOneID(id int) *CostDeleteOne {
-	builder := c.Delete().Where(cost.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &CostDeleteOne{builder}
-}
-
-// Query returns a query builder for Cost.
-func (c *CostClient) Query() *CostQuery {
-	return &CostQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeCost},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a Cost entity by its id.
-func (c *CostClient) Get(ctx context.Context, id int) (*Cost, error) {
-	return c.Query().Where(cost.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *CostClient) GetX(ctx context.Context, id int) *Cost {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// Hooks returns the client hooks.
-func (c *CostClient) Hooks() []Hook {
-	return c.hooks.Cost
-}
-
-// Interceptors returns the client interceptors.
-func (c *CostClient) Interceptors() []Interceptor {
-	return c.inters.Cost
-}
-
-func (c *CostClient) mutate(ctx context.Context, m *CostMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&CostCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&CostUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&CostUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&CostDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("ent: unknown Cost mutation op: %q", m.Op())
 	}
 }
 
@@ -550,6 +417,139 @@ func (c *CustomerClient) mutate(ctx context.Context, m *CustomerMutation) (Value
 		return (&CustomerDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
 	default:
 		return nil, fmt.Errorf("ent: unknown Customer mutation op: %q", m.Op())
+	}
+}
+
+// GCostClient is a client for the GCost schema.
+type GCostClient struct {
+	config
+}
+
+// NewGCostClient returns a client for the GCost from the given config.
+func NewGCostClient(c config) *GCostClient {
+	return &GCostClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `gcost.Hooks(f(g(h())))`.
+func (c *GCostClient) Use(hooks ...Hook) {
+	c.hooks.GCost = append(c.hooks.GCost, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `gcost.Intercept(f(g(h())))`.
+func (c *GCostClient) Intercept(interceptors ...Interceptor) {
+	c.inters.GCost = append(c.inters.GCost, interceptors...)
+}
+
+// Create returns a builder for creating a GCost entity.
+func (c *GCostClient) Create() *GCostCreate {
+	mutation := newGCostMutation(c.config, OpCreate)
+	return &GCostCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of GCost entities.
+func (c *GCostClient) CreateBulk(builders ...*GCostCreate) *GCostCreateBulk {
+	return &GCostCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *GCostClient) MapCreateBulk(slice any, setFunc func(*GCostCreate, int)) *GCostCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &GCostCreateBulk{err: fmt.Errorf("calling to GCostClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*GCostCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &GCostCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for GCost.
+func (c *GCostClient) Update() *GCostUpdate {
+	mutation := newGCostMutation(c.config, OpUpdate)
+	return &GCostUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *GCostClient) UpdateOne(_m *GCost) *GCostUpdateOne {
+	mutation := newGCostMutation(c.config, OpUpdateOne, withGCost(_m))
+	return &GCostUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *GCostClient) UpdateOneID(id int) *GCostUpdateOne {
+	mutation := newGCostMutation(c.config, OpUpdateOne, withGCostID(id))
+	return &GCostUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for GCost.
+func (c *GCostClient) Delete() *GCostDelete {
+	mutation := newGCostMutation(c.config, OpDelete)
+	return &GCostDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *GCostClient) DeleteOne(_m *GCost) *GCostDeleteOne {
+	return c.DeleteOneID(_m.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *GCostClient) DeleteOneID(id int) *GCostDeleteOne {
+	builder := c.Delete().Where(gcost.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &GCostDeleteOne{builder}
+}
+
+// Query returns a query builder for GCost.
+func (c *GCostClient) Query() *GCostQuery {
+	return &GCostQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeGCost},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a GCost entity by its id.
+func (c *GCostClient) Get(ctx context.Context, id int) (*GCost, error) {
+	return c.Query().Where(gcost.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *GCostClient) GetX(ctx context.Context, id int) *GCost {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// Hooks returns the client hooks.
+func (c *GCostClient) Hooks() []Hook {
+	return c.hooks.GCost
+}
+
+// Interceptors returns the client interceptors.
+func (c *GCostClient) Interceptors() []Interceptor {
+	return c.inters.GCost
+}
+
+func (c *GCostClient) mutate(ctx context.Context, m *GCostMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&GCostCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&GCostUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&GCostUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&GCostDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("ent: unknown GCost mutation op: %q", m.Op())
 	}
 }
 
@@ -1787,11 +1787,11 @@ func (c *UserClient) mutate(ctx context.Context, m *UserMutation) (Value, error)
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Cost, Customer, GLog, GOrder, Guide, OrderNumber, PasswordToken, Shedule,
+		Customer, GCost, GLog, GOrder, Guide, OrderNumber, PasswordToken, Shedule,
 		Transport, Trip, User []ent.Hook
 	}
 	inters struct {
-		Cost, Customer, GLog, GOrder, Guide, OrderNumber, PasswordToken, Shedule,
+		Customer, GCost, GLog, GOrder, Guide, OrderNumber, PasswordToken, Shedule,
 		Transport, Trip, User []ent.Interceptor
 	}
 )

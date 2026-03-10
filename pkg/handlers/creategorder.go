@@ -8,6 +8,7 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/mikestefanello/pagoda/ent"
+	"github.com/mikestefanello/pagoda/ent/gcost"
 	"github.com/mikestefanello/pagoda/ent/guide"
 	"github.com/mikestefanello/pagoda/ent/shedule"
 	"github.com/mikestefanello/pagoda/ent/transport"
@@ -83,6 +84,19 @@ func (h *GOrderORM) Page(ctx echo.Context) error {
 		now := time.Now()
 		tr, errTrip := h.orm.Trip.Query().Where(trip.ID(tid)).Only(ctx.Request().Context())
 
+		gcosts, errGCost := h.orm.GCost.Query().Where(gcost.TripID(tid)).All(ctx.Request().Context())
+		_ = gcosts
+
+		costs := make([]forms.Cost, len(gcosts))
+		if errGCost == nil {
+			for i := range costs {
+				costs[i] = forms.Cost{Transport_id: gcosts[i].TransportID, Cost: gcosts[i].Cost}
+			}
+			//costs[i]
+		}
+		//if errGCost = nil {
+		//	costs = &[]GCost
+		//}
 		var v []struct {
 			Resource_type int
 			Begin         time.Time
@@ -137,6 +151,10 @@ func (h *GOrderORM) Page(ctx echo.Context) error {
 			fmt.Println("ERR: " + errTrip.Error())
 			tr = nil
 		}
+		if errGCost != nil {
+			fmt.Println("ERR: " + errGCost.Error())
+			tr = nil
+		}
 		if errGuide != nil {
 			fmt.Println("ERR_GUIDE: " + errGuide.Error())
 			tr = nil
@@ -165,7 +183,7 @@ func (h *GOrderORM) Page(ctx echo.Context) error {
 			}
 
 			t := forms.GOrderParam{Trip: *tr, M0: m0, M1: m1, M2: m2, Y0: y0, Y1: y1, Y2: y2, Shedules: shedules,
-				GuideCount: guideCount, Transports: transports}
+				GuideCount: guideCount, Transports: transports, GCosts: costs}
 			return pages.GOrderUs(ctx, f, &t)
 		}
 	}

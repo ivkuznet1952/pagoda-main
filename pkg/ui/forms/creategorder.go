@@ -40,6 +40,12 @@ type (
 		Min_count int
 	}
 
+	Cost struct {
+		//Id        int
+		Cost         int
+		Transport_id int
+	}
+
 	GOrderParam struct {
 		Trip       ent.Trip
 		M0         int
@@ -51,6 +57,7 @@ type (
 		Shedules   []Shedule
 		GuideCount int
 		Transports []Transport
+		GCosts     []Cost
 	}
 
 	TripDuration struct {
