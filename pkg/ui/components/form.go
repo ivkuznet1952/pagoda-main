@@ -6,7 +6,6 @@ import (
 	x "github.com/glsubri/gomponents-alpine"
 	"github.com/mikestefanello/pagoda/pkg/form"
 	"github.com/mikestefanello/pagoda/pkg/ui"
-
 	. "maragu.dev/gomponents"
 	. "maragu.dev/gomponents/html"
 )
@@ -29,6 +28,16 @@ type (
 	}
 
 	InputFieldParamsDay struct {
+		Name  string
+		Label string
+	}
+
+	InputFieldParamsTourist struct {
+		Name  string
+		Label string
+	}
+
+	InputFieldParamsTransport struct {
 		Name  string
 		Label string
 	}
@@ -87,16 +96,21 @@ type (
 		Options []HourDuration
 	}
 
+	OrderTransport struct {
+		Id   int
+		Name string
+	}
+
 	ChoiceDate struct {
-		Year      int
-		Month     int
-		Day       int
-		Label     int
-		IsEnabled bool
-		IsVisible bool
-		IsWeekend bool
-		//IsSelected    bool
-		HourDurations []HourDuration
+		Year            int
+		Month           int
+		Day             int
+		Label           int
+		IsEnabled       bool
+		IsVisible       bool
+		IsWeekend       bool
+		HourDurations   []HourDuration
+		OrderTransports []OrderTransport
 	}
 
 	TextareaFieldParams struct {
@@ -190,7 +204,7 @@ func MonthChooser(el MonthChooserOptionsParams) Node {
 				Value(opt.Value),
 				Class("radio mr-1 "), //+formFieldStatusClass(el.Form, el.FormField)),
 				If(strconv.Itoa(el.Value) == opt.Value, Checked()),
-				x.On("click", "if (checked_month != "+opt.Value+") {order_day=''};"),
+				x.On("click", "if (checked_month != "+opt.Value+") {order_day=''; order_begin = ''; begin_list = [];}"),
 				x.Model("checked_month"),
 			),
 			Label(
@@ -198,9 +212,9 @@ func MonthChooser(el MonthChooserOptionsParams) Node {
 				For(id),
 			),
 		)
-
+		//for (let i = 0; i < begin_list.length; i++) {begin_list[i].active = false;}};
 	}
-	//fmt.Println("####### __________________")
+
 	return Fieldset(
 		el.Label,
 		Div(
@@ -211,13 +225,24 @@ func MonthChooser(el MonthChooserOptionsParams) Node {
 	)
 }
 
-func OrderPeriod(h []HourDuration) string {
+func setOrderPeriod(h []HourDuration) string {
 
 	s := "["
 	for i := range h {
 		value := addZeroToStr(strconv.Itoa(h[i].H0)) + ":" + addZeroToStr(strconv.Itoa(h[i].M0)) + " - " +
 			addZeroToStr(strconv.Itoa(h[i].H1)) + ":" + addZeroToStr(strconv.Itoa(h[i].M1))
 		s = s + "{id: '" + strconv.Itoa(i) + "', value: '" + value + "', active: false},"
+	}
+	s = s[0:len(s)-1] + "]"
+	return s
+}
+
+func setOrderTransport(h []OrderTransport) string {
+
+	s := "["
+	for i := range h {
+		value := "{ id: " + strconv.Itoa(h[i].Id) + ", name:'" + h[i].Name + "', active: false},"
+		s = s + value
 	}
 	s = s[0:len(s)-1] + "]"
 	return s
@@ -230,10 +255,8 @@ func Calendar(el OptionsParamsCalendar) Node {
 	for i, opt := range el.Options {
 
 		buttons[i] = Div(
-
-			Attr("x-ref", "dayDiv_"+strconv.Itoa(el.Month)+"_"+strconv.Itoa(opt.Label)),
-			//Attr("x-model", "order_day"),
-			Attr("@click", updateDayColor(el, i, opt)),
+			x.Ref("dayDiv_"+strconv.Itoa(el.Month)+"_"+strconv.Itoa(opt.Label)),
+			x.On("click", updateDayColor(el, i, opt)),
 			Class("flex flex-row ml-4"),
 			Div(
 				Raw("&#x25A0;"),
@@ -288,22 +311,43 @@ func Calendar(el OptionsParamsCalendar) Node {
 		),
 
 		Div(
-			Attr("x-show", "begin_list.length > 0"),
-			Text("Период проведение экскурсии (начало/окончание)"),
+			x.Show("begin_list.length > 0"),
+			Class("menu-title mt-3 uppercase bg-base-200 p-2"),
+			Span(Text("Период проведение экскурсии (начало/окончание)")),
 		),
 		Div(
 			Class("flex flex-wrap gap-8"),
-			Attr("x-id", "['list-item']"),
 			Template(
-				Attr("x-for", "(item, index) in begin_list"),
+				x.For("(item, index) in begin_list"),
 				Div(
-					//Attr(":id", "$id('list-item', item.id)"),
 					Strong(
-						Attr(":style", "item.active && { color: 'green'}"),
-						Attr("x-text", "item.value"),
-						Attr("@click", "order_begin = item.value; "+
+						x.Bind("style", "item.active && { color: 'green'}"),
+						x.Text("item.value"),
+						x.On("click", "order_begin = item.value; "+
 							" for (let i = 0; i < begin_list.length; i++) {"+
 							" begin_list[i].active = false;  "+
+							"}; "+
+							"; setTimeout(() => {item.active=true;}, 20); "),
+					),
+				),
+			),
+		),
+		Div(
+			x.Show("transport_list.length > 0"),
+			Class("menu-title mt-3 uppercase bg-base-200 p-2"),
+			Span(Text("Транспорт")),
+		),
+		Div(
+			Class("flex flex-wrap gap-8"),
+			Template(
+				x.For("(item, index) in transport_list"),
+				Div(
+					Strong(
+						x.Bind("style", "item.active && { color: 'green'}"),
+						x.Text("item.name"),
+						x.On("click", "order_transport = item.name; "+
+							" for (let i = 0; i < transport_list.length; i++) {"+
+							" transport_list[i].active = false;  "+
 							"}; "+
 							"; setTimeout(() => {item.active=true;}, 20); "),
 					),
@@ -354,13 +398,20 @@ func updateDayColor(el OptionsParamsCalendar, current int, opt ChoiceDate) strin
 		if len(opt.HourDurations) == 0 {
 			s = s + "begin_list = []; begin_list[0]='Нет доступного времени экскурсии!'; "
 		}
+		if len(opt.OrderTransports) == 0 {
+			s = s + "transport_list = []; transport_list[0]='Нет доступного транспорта!'; "
+		}
 		if len(opt.HourDurations) > 0 {
-			a := OrderPeriod(opt.HourDurations)
+			a := setOrderPeriod(opt.HourDurations)
 			s = s + "begin_list=" + a + "; "
+		}
+		if len(opt.OrderTransports) > 0 {
+			a := setOrderTransport(opt.OrderTransports)
+			s = s + "transport_list=" + a + "; "
 		}
 	}
 	if !opt.IsVisible || !opt.IsEnabled {
-		s = s + "begin_list=[]; "
+		s = s + "begin_list=[]; transport_list=[];"
 	}
 
 	l := len(el.Options)
@@ -508,31 +559,21 @@ func InputField(el InputFieldParams) Node {
 	)
 }
 
-/*
-func InputFieldTouristCount(el InputFieldParams) Node {
+func InputFieldTourist(el InputFieldParamsTourist) Node {
 	return Fieldset(
 		el.Label,
 		Input(
-			ID(el.Name),
+			x.Model("tourist_count"),
 			Name(el.Name),
-			Type(el.InputType),
-			Class("input "+formFieldStatusClass(el.Form, el.FormField)),
-			Value(el.Value),
-			If(el.Placeholder != "", Placeholder(el.Placeholder)),
-			Attr("x-model", "tourist_count"),
-			//Attr("x-ref", "tourist_count_field"),
-			Attr("@click", "if (tourist_count < 0) tourist_count = 0;"),
+			//Class("hidden"),
 		),
-		//Help(el.Help),
-		formFieldErrors(el.Form, el.FormField),
 	)
-} */
+}
 
 func InputFieldDay(el InputFieldParamsDay) Node {
 	return Fieldset(
 		el.Label,
 		Input(
-			//Attr("x-model", "order_day"),
 			x.Model("order_day"),
 			Name(el.Name),
 			//Class("hidden"),
@@ -544,7 +585,6 @@ func InputFieldBegin(el InputFieldParamsBegin) Node {
 	return Fieldset(
 		el.Label,
 		Input(
-			//Attr("x-model", "order_begin"),
 			x.Model("order_begin"),
 			Name(el.Name),
 			//Class("hidden"),
@@ -552,12 +592,16 @@ func InputFieldBegin(el InputFieldParamsBegin) Node {
 	)
 }
 
-//func Help(text string) Node {
-//	return If(len(text) > 0, Div(
-//		Class("label"),
-//		Text(text),
-//	))
-//}
+func InputFieldTransport(el InputFieldParamsTransport) Node {
+	return Fieldset(
+		el.Label,
+		Input(
+			x.Model("order_transport"),
+			Name(el.Name),
+			//Class("hidden"),
+		),
+	)
+}
 
 func Fieldset(label string, els ...Node) Node {
 	return FieldSet(

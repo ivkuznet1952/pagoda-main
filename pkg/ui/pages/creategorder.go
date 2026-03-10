@@ -53,10 +53,8 @@ func GOrderUs(ctx echo.Context, form *forms.GOrderForm, trip *forms.GOrderParam)
 			return form.Render(r, trip)
 		}),
 		Iff(form.IsDone(), func() Node {
-			//fmt.Println("/////////// 00000000000000000000")
 			//return form.Render(r)
-			//return Text("Дата:" + form.Day)
-			return Badge(ColorSuccess, form.Day+" "+form.Begin) //+" "+strconv.Itoa(form.TouristCount))
+			return Badge(ColorSuccess, form.Tourists+" "+form.Day+" "+form.Begin+" "+form.Transport)
 		}),
 
 		//Iff(!form.IsDone(), func() Node {

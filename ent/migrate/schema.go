@@ -47,7 +47,7 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "num", Type: field.TypeInt, Default: 0},
 		{Name: "trip_id", Type: field.TypeInt, Default: 0},
-		{Name: "count_person", Type: field.TypeInt, Default: 0},
+		{Name: "tourist_count", Type: field.TypeInt, Default: 0},
 		{Name: "day", Type: field.TypeTime},
 		{Name: "begin", Type: field.TypeTime},
 		{Name: "transport_id", Type: field.TypeInt, Default: 0},

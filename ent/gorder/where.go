@@ -64,9 +64,9 @@ func TripID(v int) predicate.GOrder {
 	return predicate.GOrder(sql.FieldEQ(FieldTripID, v))
 }
 
-// CountPerson applies equality check predicate on the "count_person" field. It's identical to CountPersonEQ.
-func CountPerson(v int) predicate.GOrder {
-	return predicate.GOrder(sql.FieldEQ(FieldCountPerson, v))
+// TouristCount applies equality check predicate on the "tourist_count" field. It's identical to TouristCountEQ.
+func TouristCount(v int) predicate.GOrder {
+	return predicate.GOrder(sql.FieldEQ(FieldTouristCount, v))
 }
 
 // Day applies equality check predicate on the "day" field. It's identical to DayEQ.
@@ -224,44 +224,44 @@ func TripIDLTE(v int) predicate.GOrder {
 	return predicate.GOrder(sql.FieldLTE(FieldTripID, v))
 }
 
-// CountPersonEQ applies the EQ predicate on the "count_person" field.
-func CountPersonEQ(v int) predicate.GOrder {
-	return predicate.GOrder(sql.FieldEQ(FieldCountPerson, v))
+// TouristCountEQ applies the EQ predicate on the "tourist_count" field.
+func TouristCountEQ(v int) predicate.GOrder {
+	return predicate.GOrder(sql.FieldEQ(FieldTouristCount, v))
 }
 
-// CountPersonNEQ applies the NEQ predicate on the "count_person" field.
-func CountPersonNEQ(v int) predicate.GOrder {
-	return predicate.GOrder(sql.FieldNEQ(FieldCountPerson, v))
+// TouristCountNEQ applies the NEQ predicate on the "tourist_count" field.
+func TouristCountNEQ(v int) predicate.GOrder {
+	return predicate.GOrder(sql.FieldNEQ(FieldTouristCount, v))
 }
 
-// CountPersonIn applies the In predicate on the "count_person" field.
-func CountPersonIn(vs ...int) predicate.GOrder {
-	return predicate.GOrder(sql.FieldIn(FieldCountPerson, vs...))
+// TouristCountIn applies the In predicate on the "tourist_count" field.
+func TouristCountIn(vs ...int) predicate.GOrder {
+	return predicate.GOrder(sql.FieldIn(FieldTouristCount, vs...))
 }
 
-// CountPersonNotIn applies the NotIn predicate on the "count_person" field.
-func CountPersonNotIn(vs ...int) predicate.GOrder {
-	return predicate.GOrder(sql.FieldNotIn(FieldCountPerson, vs...))
+// TouristCountNotIn applies the NotIn predicate on the "tourist_count" field.
+func TouristCountNotIn(vs ...int) predicate.GOrder {
+	return predicate.GOrder(sql.FieldNotIn(FieldTouristCount, vs...))
 }
 
-// CountPersonGT applies the GT predicate on the "count_person" field.
-func CountPersonGT(v int) predicate.GOrder {
-	return predicate.GOrder(sql.FieldGT(FieldCountPerson, v))
+// TouristCountGT applies the GT predicate on the "tourist_count" field.
+func TouristCountGT(v int) predicate.GOrder {
+	return predicate.GOrder(sql.FieldGT(FieldTouristCount, v))
 }
 
-// CountPersonGTE applies the GTE predicate on the "count_person" field.
-func CountPersonGTE(v int) predicate.GOrder {
-	return predicate.GOrder(sql.FieldGTE(FieldCountPerson, v))
+// TouristCountGTE applies the GTE predicate on the "tourist_count" field.
+func TouristCountGTE(v int) predicate.GOrder {
+	return predicate.GOrder(sql.FieldGTE(FieldTouristCount, v))
 }
 
-// CountPersonLT applies the LT predicate on the "count_person" field.
-func CountPersonLT(v int) predicate.GOrder {
-	return predicate.GOrder(sql.FieldLT(FieldCountPerson, v))
+// TouristCountLT applies the LT predicate on the "tourist_count" field.
+func TouristCountLT(v int) predicate.GOrder {
+	return predicate.GOrder(sql.FieldLT(FieldTouristCount, v))
 }
 
-// CountPersonLTE applies the LTE predicate on the "count_person" field.
-func CountPersonLTE(v int) predicate.GOrder {
-	return predicate.GOrder(sql.FieldLTE(FieldCountPerson, v))
+// TouristCountLTE applies the LTE predicate on the "tourist_count" field.
+func TouristCountLTE(v int) predicate.GOrder {
+	return predicate.GOrder(sql.FieldLTE(FieldTouristCount, v))
 }
 
 // DayEQ applies the EQ predicate on the "day" field.

@@ -21,8 +21,8 @@ type GOrder struct {
 	Num int `json:"num,omitempty"`
 	// TripID holds the value of the "trip_id" field.
 	TripID int `json:"trip_id,omitempty"`
-	// CountPerson holds the value of the "count_person" field.
-	CountPerson int `json:"count_person,omitempty"`
+	// TouristCount holds the value of the "tourist_count" field.
+	TouristCount int `json:"tourist_count,omitempty"`
 	// Day holds the value of the "day" field.
 	Day time.Time `json:"day,omitempty"`
 	// Begin holds the value of the "begin" field.
@@ -63,7 +63,7 @@ func (*GOrder) scanValues(columns []string) ([]any, error) {
 		switch columns[i] {
 		case gorder.FieldArchived:
 			values[i] = new(sql.NullBool)
-		case gorder.FieldID, gorder.FieldNum, gorder.FieldTripID, gorder.FieldCountPerson, gorder.FieldTransportID, gorder.FieldGuideID, gorder.FieldCost, gorder.FieldStatus, gorder.FieldPayStatus, gorder.FieldPaidSum, gorder.FieldCustomerID, gorder.FieldCreatedBy:
+		case gorder.FieldID, gorder.FieldNum, gorder.FieldTripID, gorder.FieldTouristCount, gorder.FieldTransportID, gorder.FieldGuideID, gorder.FieldCost, gorder.FieldStatus, gorder.FieldPayStatus, gorder.FieldPaidSum, gorder.FieldCustomerID, gorder.FieldCreatedBy:
 			values[i] = new(sql.NullInt64)
 		case gorder.FieldPlace, gorder.FieldComment:
 			values[i] = new(sql.NullString)
@@ -102,11 +102,11 @@ func (_m *GOrder) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				_m.TripID = int(value.Int64)
 			}
-		case gorder.FieldCountPerson:
+		case gorder.FieldTouristCount:
 			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field count_person", values[i])
+				return fmt.Errorf("unexpected type %T for field tourist_count", values[i])
 			} else if value.Valid {
-				_m.CountPerson = int(value.Int64)
+				_m.TouristCount = int(value.Int64)
 			}
 		case gorder.FieldDay:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -240,8 +240,8 @@ func (_m *GOrder) String() string {
 	builder.WriteString("trip_id=")
 	builder.WriteString(fmt.Sprintf("%v", _m.TripID))
 	builder.WriteString(", ")
-	builder.WriteString("count_person=")
-	builder.WriteString(fmt.Sprintf("%v", _m.CountPerson))
+	builder.WriteString("tourist_count=")
+	builder.WriteString(fmt.Sprintf("%v", _m.TouristCount))
 	builder.WriteString(", ")
 	builder.WriteString("day=")
 	builder.WriteString(_m.Day.Format(time.ANSIC))

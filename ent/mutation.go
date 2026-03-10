@@ -1420,42 +1420,42 @@ func (m *GLogMutation) ResetEdge(name string) error {
 // GOrderMutation represents an operation that mutates the GOrder nodes in the graph.
 type GOrderMutation struct {
 	config
-	op              Op
-	typ             string
-	id              *int
-	num             *int
-	addnum          *int
-	trip_id         *int
-	addtrip_id      *int
-	count_person    *int
-	addcount_person *int
-	day             *time.Time
-	begin           *time.Time
-	transport_id    *int
-	addtransport_id *int
-	guide_id        *int
-	addguide_id     *int
-	cost            *int
-	addcost         *int
-	status          *int
-	addstatus       *int
-	pay_status      *int
-	addpay_status   *int
-	paid_sum        *int
-	addpaid_sum     *int
-	customer_id     *int
-	addcustomer_id  *int
-	place           *string
-	comment         *string
-	created         *time.Time
-	updated         *time.Time
-	created_by      *int
-	addcreated_by   *int
-	archived        *bool
-	clearedFields   map[string]struct{}
-	done            bool
-	oldValue        func(context.Context) (*GOrder, error)
-	predicates      []predicate.GOrder
+	op               Op
+	typ              string
+	id               *int
+	num              *int
+	addnum           *int
+	trip_id          *int
+	addtrip_id       *int
+	tourist_count    *int
+	addtourist_count *int
+	day              *time.Time
+	begin            *time.Time
+	transport_id     *int
+	addtransport_id  *int
+	guide_id         *int
+	addguide_id      *int
+	cost             *int
+	addcost          *int
+	status           *int
+	addstatus        *int
+	pay_status       *int
+	addpay_status    *int
+	paid_sum         *int
+	addpaid_sum      *int
+	customer_id      *int
+	addcustomer_id   *int
+	place            *string
+	comment          *string
+	created          *time.Time
+	updated          *time.Time
+	created_by       *int
+	addcreated_by    *int
+	archived         *bool
+	clearedFields    map[string]struct{}
+	done             bool
+	oldValue         func(context.Context) (*GOrder, error)
+	predicates       []predicate.GOrder
 }
 
 var _ ent.Mutation = (*GOrderMutation)(nil)
@@ -1668,60 +1668,60 @@ func (m *GOrderMutation) ResetTripID() {
 	m.addtrip_id = nil
 }
 
-// SetCountPerson sets the "count_person" field.
-func (m *GOrderMutation) SetCountPerson(i int) {
-	m.count_person = &i
-	m.addcount_person = nil
+// SetTouristCount sets the "tourist_count" field.
+func (m *GOrderMutation) SetTouristCount(i int) {
+	m.tourist_count = &i
+	m.addtourist_count = nil
 }
 
-// CountPerson returns the value of the "count_person" field in the mutation.
-func (m *GOrderMutation) CountPerson() (r int, exists bool) {
-	v := m.count_person
+// TouristCount returns the value of the "tourist_count" field in the mutation.
+func (m *GOrderMutation) TouristCount() (r int, exists bool) {
+	v := m.tourist_count
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// OldCountPerson returns the old "count_person" field's value of the GOrder entity.
+// OldTouristCount returns the old "tourist_count" field's value of the GOrder entity.
 // If the GOrder object wasn't provided to the builder, the object is fetched from the database.
 // An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *GOrderMutation) OldCountPerson(ctx context.Context) (v int, err error) {
+func (m *GOrderMutation) OldTouristCount(ctx context.Context) (v int, err error) {
 	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldCountPerson is only allowed on UpdateOne operations")
+		return v, errors.New("OldTouristCount is only allowed on UpdateOne operations")
 	}
 	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldCountPerson requires an ID field in the mutation")
+		return v, errors.New("OldTouristCount requires an ID field in the mutation")
 	}
 	oldValue, err := m.oldValue(ctx)
 	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCountPerson: %w", err)
+		return v, fmt.Errorf("querying old value for OldTouristCount: %w", err)
 	}
-	return oldValue.CountPerson, nil
+	return oldValue.TouristCount, nil
 }
 
-// AddCountPerson adds i to the "count_person" field.
-func (m *GOrderMutation) AddCountPerson(i int) {
-	if m.addcount_person != nil {
-		*m.addcount_person += i
+// AddTouristCount adds i to the "tourist_count" field.
+func (m *GOrderMutation) AddTouristCount(i int) {
+	if m.addtourist_count != nil {
+		*m.addtourist_count += i
 	} else {
-		m.addcount_person = &i
+		m.addtourist_count = &i
 	}
 }
 
-// AddedCountPerson returns the value that was added to the "count_person" field in this mutation.
-func (m *GOrderMutation) AddedCountPerson() (r int, exists bool) {
-	v := m.addcount_person
+// AddedTouristCount returns the value that was added to the "tourist_count" field in this mutation.
+func (m *GOrderMutation) AddedTouristCount() (r int, exists bool) {
+	v := m.addtourist_count
 	if v == nil {
 		return
 	}
 	return *v, true
 }
 
-// ResetCountPerson resets all changes to the "count_person" field.
-func (m *GOrderMutation) ResetCountPerson() {
-	m.count_person = nil
-	m.addcount_person = nil
+// ResetTouristCount resets all changes to the "tourist_count" field.
+func (m *GOrderMutation) ResetTouristCount() {
+	m.tourist_count = nil
+	m.addtourist_count = nil
 }
 
 // SetDay sets the "day" field.
@@ -2465,8 +2465,8 @@ func (m *GOrderMutation) Fields() []string {
 	if m.trip_id != nil {
 		fields = append(fields, gorder.FieldTripID)
 	}
-	if m.count_person != nil {
-		fields = append(fields, gorder.FieldCountPerson)
+	if m.tourist_count != nil {
+		fields = append(fields, gorder.FieldTouristCount)
 	}
 	if m.day != nil {
 		fields = append(fields, gorder.FieldDay)
@@ -2525,8 +2525,8 @@ func (m *GOrderMutation) Field(name string) (ent.Value, bool) {
 		return m.Num()
 	case gorder.FieldTripID:
 		return m.TripID()
-	case gorder.FieldCountPerson:
-		return m.CountPerson()
+	case gorder.FieldTouristCount:
+		return m.TouristCount()
 	case gorder.FieldDay:
 		return m.Day()
 	case gorder.FieldBegin:
@@ -2570,8 +2570,8 @@ func (m *GOrderMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldNum(ctx)
 	case gorder.FieldTripID:
 		return m.OldTripID(ctx)
-	case gorder.FieldCountPerson:
-		return m.OldCountPerson(ctx)
+	case gorder.FieldTouristCount:
+		return m.OldTouristCount(ctx)
 	case gorder.FieldDay:
 		return m.OldDay(ctx)
 	case gorder.FieldBegin:
@@ -2625,12 +2625,12 @@ func (m *GOrderMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetTripID(v)
 		return nil
-	case gorder.FieldCountPerson:
+	case gorder.FieldTouristCount:
 		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.SetCountPerson(v)
+		m.SetTouristCount(v)
 		return nil
 	case gorder.FieldDay:
 		v, ok := value.(time.Time)
@@ -2751,8 +2751,8 @@ func (m *GOrderMutation) AddedFields() []string {
 	if m.addtrip_id != nil {
 		fields = append(fields, gorder.FieldTripID)
 	}
-	if m.addcount_person != nil {
-		fields = append(fields, gorder.FieldCountPerson)
+	if m.addtourist_count != nil {
+		fields = append(fields, gorder.FieldTouristCount)
 	}
 	if m.addtransport_id != nil {
 		fields = append(fields, gorder.FieldTransportID)
@@ -2790,8 +2790,8 @@ func (m *GOrderMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedNum()
 	case gorder.FieldTripID:
 		return m.AddedTripID()
-	case gorder.FieldCountPerson:
-		return m.AddedCountPerson()
+	case gorder.FieldTouristCount:
+		return m.AddedTouristCount()
 	case gorder.FieldTransportID:
 		return m.AddedTransportID()
 	case gorder.FieldGuideID:
@@ -2831,12 +2831,12 @@ func (m *GOrderMutation) AddField(name string, value ent.Value) error {
 		}
 		m.AddTripID(v)
 		return nil
-	case gorder.FieldCountPerson:
+	case gorder.FieldTouristCount:
 		v, ok := value.(int)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
-		m.AddCountPerson(v)
+		m.AddTouristCount(v)
 		return nil
 	case gorder.FieldTransportID:
 		v, ok := value.(int)
@@ -2927,8 +2927,8 @@ func (m *GOrderMutation) ResetField(name string) error {
 	case gorder.FieldTripID:
 		m.ResetTripID()
 		return nil
-	case gorder.FieldCountPerson:
-		m.ResetCountPerson()
+	case gorder.FieldTouristCount:
+		m.ResetTouristCount()
 		return nil
 	case gorder.FieldDay:
 		m.ResetDay()

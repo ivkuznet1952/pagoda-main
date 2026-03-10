@@ -425,8 +425,8 @@ func (h *Handler) GOrderCreate(ctx echo.Context) error {
 	if payload.TripID != nil {
 		op.SetTripID(*payload.TripID)
 	}
-	if payload.CountPerson != nil {
-		op.SetCountPerson(*payload.CountPerson)
+	if payload.TouristCount != nil {
+		op.SetTouristCount(*payload.TouristCount)
 	}
 	op.SetDay(payload.Day)
 	op.SetBegin(payload.Begin)
@@ -491,11 +491,11 @@ func (h *Handler) GOrderUpdate(ctx echo.Context, id int) error {
 	} else {
 		op.SetTripID(*payload.TripID)
 	}
-	if payload.CountPerson == nil {
+	if payload.TouristCount == nil {
 		var empty int
-		op.SetCountPerson(empty)
+		op.SetTouristCount(empty)
 	} else {
-		op.SetCountPerson(*payload.CountPerson)
+		op.SetTouristCount(*payload.TouristCount)
 	}
 	op.SetDay(payload.Day)
 	op.SetBegin(payload.Begin)
@@ -582,7 +582,7 @@ func (h *Handler) GOrderList(ctx echo.Context) (*EntityList, error) {
 		Columns: []string{
 			"Num",
 			"Trip ID",
-			"Count person",
+			"Tourist count",
 			"Day",
 			"Begin",
 			"Transport ID",
@@ -610,7 +610,7 @@ func (h *Handler) GOrderList(ctx echo.Context) (*EntityList, error) {
 			Values: []string{
 				fmt.Sprint(res[i].Num),
 				fmt.Sprint(res[i].TripID),
-				fmt.Sprint(res[i].CountPerson),
+				fmt.Sprint(res[i].TouristCount),
 				res[i].Day.Format(h.Config.TimeFormat),
 				res[i].Begin.Format(h.Config.TimeFormat),
 				fmt.Sprint(res[i].TransportID),
@@ -642,7 +642,7 @@ func (h *Handler) GOrderGet(ctx echo.Context, id int) (url.Values, error) {
 	v := url.Values{}
 	v.Set("num", fmt.Sprint(entity.Num))
 	v.Set("trip_id", fmt.Sprint(entity.TripID))
-	v.Set("count_person", fmt.Sprint(entity.CountPerson))
+	v.Set("tourist_count", fmt.Sprint(entity.TouristCount))
 	v.Set("day", entity.Day.Format(dateTimeFormat))
 	v.Set("begin", entity.Begin.Format(dateTimeFormat))
 	v.Set("transport_id", fmt.Sprint(entity.TransportID))

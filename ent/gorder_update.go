@@ -70,24 +70,24 @@ func (_u *GOrderUpdate) AddTripID(v int) *GOrderUpdate {
 	return _u
 }
 
-// SetCountPerson sets the "count_person" field.
-func (_u *GOrderUpdate) SetCountPerson(v int) *GOrderUpdate {
-	_u.mutation.ResetCountPerson()
-	_u.mutation.SetCountPerson(v)
+// SetTouristCount sets the "tourist_count" field.
+func (_u *GOrderUpdate) SetTouristCount(v int) *GOrderUpdate {
+	_u.mutation.ResetTouristCount()
+	_u.mutation.SetTouristCount(v)
 	return _u
 }
 
-// SetNillableCountPerson sets the "count_person" field if the given value is not nil.
-func (_u *GOrderUpdate) SetNillableCountPerson(v *int) *GOrderUpdate {
+// SetNillableTouristCount sets the "tourist_count" field if the given value is not nil.
+func (_u *GOrderUpdate) SetNillableTouristCount(v *int) *GOrderUpdate {
 	if v != nil {
-		_u.SetCountPerson(*v)
+		_u.SetTouristCount(*v)
 	}
 	return _u
 }
 
-// AddCountPerson adds value to the "count_person" field.
-func (_u *GOrderUpdate) AddCountPerson(v int) *GOrderUpdate {
-	_u.mutation.AddCountPerson(v)
+// AddTouristCount adds value to the "tourist_count" field.
+func (_u *GOrderUpdate) AddTouristCount(v int) *GOrderUpdate {
+	_u.mutation.AddTouristCount(v)
 	return _u
 }
 
@@ -396,11 +396,11 @@ func (_u *GOrderUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.AddedTripID(); ok {
 		_spec.AddField(gorder.FieldTripID, field.TypeInt, value)
 	}
-	if value, ok := _u.mutation.CountPerson(); ok {
-		_spec.SetField(gorder.FieldCountPerson, field.TypeInt, value)
+	if value, ok := _u.mutation.TouristCount(); ok {
+		_spec.SetField(gorder.FieldTouristCount, field.TypeInt, value)
 	}
-	if value, ok := _u.mutation.AddedCountPerson(); ok {
-		_spec.AddField(gorder.FieldCountPerson, field.TypeInt, value)
+	if value, ok := _u.mutation.AddedTouristCount(); ok {
+		_spec.AddField(gorder.FieldTouristCount, field.TypeInt, value)
 	}
 	if value, ok := _u.mutation.Day(); ok {
 		_spec.SetField(gorder.FieldDay, field.TypeTime, value)
@@ -530,24 +530,24 @@ func (_u *GOrderUpdateOne) AddTripID(v int) *GOrderUpdateOne {
 	return _u
 }
 
-// SetCountPerson sets the "count_person" field.
-func (_u *GOrderUpdateOne) SetCountPerson(v int) *GOrderUpdateOne {
-	_u.mutation.ResetCountPerson()
-	_u.mutation.SetCountPerson(v)
+// SetTouristCount sets the "tourist_count" field.
+func (_u *GOrderUpdateOne) SetTouristCount(v int) *GOrderUpdateOne {
+	_u.mutation.ResetTouristCount()
+	_u.mutation.SetTouristCount(v)
 	return _u
 }
 
-// SetNillableCountPerson sets the "count_person" field if the given value is not nil.
-func (_u *GOrderUpdateOne) SetNillableCountPerson(v *int) *GOrderUpdateOne {
+// SetNillableTouristCount sets the "tourist_count" field if the given value is not nil.
+func (_u *GOrderUpdateOne) SetNillableTouristCount(v *int) *GOrderUpdateOne {
 	if v != nil {
-		_u.SetCountPerson(*v)
+		_u.SetTouristCount(*v)
 	}
 	return _u
 }
 
-// AddCountPerson adds value to the "count_person" field.
-func (_u *GOrderUpdateOne) AddCountPerson(v int) *GOrderUpdateOne {
-	_u.mutation.AddCountPerson(v)
+// AddTouristCount adds value to the "tourist_count" field.
+func (_u *GOrderUpdateOne) AddTouristCount(v int) *GOrderUpdateOne {
+	_u.mutation.AddTouristCount(v)
 	return _u
 }
 
@@ -886,11 +886,11 @@ func (_u *GOrderUpdateOne) sqlSave(ctx context.Context) (_node *GOrder, err erro
 	if value, ok := _u.mutation.AddedTripID(); ok {
 		_spec.AddField(gorder.FieldTripID, field.TypeInt, value)
 	}
-	if value, ok := _u.mutation.CountPerson(); ok {
-		_spec.SetField(gorder.FieldCountPerson, field.TypeInt, value)
+	if value, ok := _u.mutation.TouristCount(); ok {
+		_spec.SetField(gorder.FieldTouristCount, field.TypeInt, value)
 	}
-	if value, ok := _u.mutation.AddedCountPerson(); ok {
-		_spec.AddField(gorder.FieldCountPerson, field.TypeInt, value)
+	if value, ok := _u.mutation.AddedTouristCount(); ok {
+		_spec.AddField(gorder.FieldTouristCount, field.TypeInt, value)
 	}
 	if value, ok := _u.mutation.Day(); ok {
 		_spec.SetField(gorder.FieldDay, field.TypeTime, value)

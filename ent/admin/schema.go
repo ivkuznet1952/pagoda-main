@@ -160,7 +160,7 @@ var fieldsGOrder = []*FieldSchema{
 		Enums:     nil,
 	},
 	{
-		Name:      "count_person",
+		Name:      "tourist_count",
 		Type:      field.TypeInt,
 		Optional:  false,
 		Immutable: false,

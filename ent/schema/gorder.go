@@ -17,7 +17,7 @@ func (GOrder) Fields() []ent.Field {
 	return []ent.Field{
 		field.Int("num").Default(0.0),
 		field.Int("trip_id").Default(0.0),
-		field.Int("count_person").Default(0.0),
+		field.Int("tourist_count").Default(0.0),
 		field.Time("day").Default(nil),
 		field.Time("begin").Default(nil),
 		field.Int("transport_id").Default(0.0),

@@ -81,7 +81,7 @@ func (h *GOrderORM) Page(ctx echo.Context) error {
 	if tid > 0 {
 
 		now := time.Now()
-		tr, err := h.orm.Trip.Query().Where(trip.ID(tid)).Only(ctx.Request().Context())
+		tr, errTrip := h.orm.Trip.Query().Where(trip.ID(tid)).Only(ctx.Request().Context())
 
 		var v []struct {
 			Resource_type int
@@ -103,26 +103,26 @@ func (h *GOrderORM) Page(ctx echo.Context) error {
 			}
 		}
 
-		var t []struct {
+		var trans []struct {
 			Id        int
 			Name      string
 			Max_count int
 			Min_count int
 		}
-		_ = t
+		//_ = trans
 
 		errTransport := h.orm.Transport.Query().
 			Where(
 				transport.Active(true),
 			).
 			Unique(true).
-			Select(transport.FieldID, transport.FieldName, transport.FieldMinCount, transport.FieldMaxCount).Scan(ctx.Request().Context(), &t)
-		transports := make([]forms.Transport, len(t))
-		_ = transports
+			Select(transport.FieldID, transport.FieldName, transport.FieldMinCount, transport.FieldMaxCount).Scan(ctx.Request().Context(), &trans)
+		transports := make([]forms.Transport, len(trans))
+		//_ = transports
 		if errTransport == nil {
-			for i := range t {
-				_ = i
-				transports[i] = t[i]
+			for i := range trans {
+				//_ = i
+				transports[i] = trans[i]
 			}
 		}
 		if errTransport != nil {
@@ -133,8 +133,8 @@ func (h *GOrderORM) Page(ctx echo.Context) error {
 		guideCount, errGuide := h.orm.Guide.Query().Where(guide.Active(true)).Count(ctx.Request().Context())
 
 		// create trip shedule for current date
-		if err != nil {
-			fmt.Println("ERR: " + err.Error())
+		if errTrip != nil {
+			fmt.Println("ERR: " + errTrip.Error())
 			tr = nil
 		}
 		if errGuide != nil {
@@ -164,7 +164,8 @@ func (h *GOrderORM) Page(ctx echo.Context) error {
 				y2 = y2 + 1
 			}
 
-			t := forms.GOrderParam{Trip: *tr, M0: m0, M1: m1, M2: m2, Y0: y0, Y1: y1, Y2: y2, Shedules: shedules, GuideCount: guideCount}
+			t := forms.GOrderParam{Trip: *tr, M0: m0, M1: m1, M2: m2, Y0: y0, Y1: y1, Y2: y2, Shedules: shedules,
+				GuideCount: guideCount, Transports: transports}
 			return pages.GOrderUs(ctx, f, &t)
 		}
 	}
@@ -179,7 +180,6 @@ func (h *GOrderORM) Page(ctx echo.Context) error {
 func (h *GOrderORM) Submit(ctx echo.Context) error {
 
 	var input forms.GOrderForm
-	//fmt.Println(input)
 
 	err := form.Submit(ctx, &input)
 	//fmt.Println("#####////////////////////// ERROR: " + err)
@@ -192,10 +192,9 @@ func (h *GOrderORM) Submit(ctx echo.Context) error {
 		return err
 	}
 
-	fmt.Println("#####//////////////////////111111 handler input DATE: " + input.Day)
-	fmt.Println("#####//////////////////////111111 handler input HOUR: " + input.Begin)
-	//fmt.Println(input)
-
+	//fmt.Println("#####//////////////////////111111 handler input DATE: " + input.Day)
+	//fmt.Println("#####//////////////////////111111 handler input HOUR: " + input.Begin)
+	//fmt.Println("#####//////////////////////111111 handler input TRANSPORT: " + input.Transport)
 	//fmt.Println("##### SUBMIT")
 	return h.Page(ctx)
 }

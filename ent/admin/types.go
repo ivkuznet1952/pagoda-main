@@ -40,24 +40,24 @@ func (e *GLog) GetSchema() []*FieldSchema {
 }
 
 type GOrder struct {
-	Num         *int       `form:"num"`
-	TripID      *int       `form:"trip_id"`
-	CountPerson *int       `form:"count_person"`
-	Day         time.Time  `form:"day"`
-	Begin       time.Time  `form:"begin"`
-	TransportID *int       `form:"transport_id"`
-	GuideID     *int       `form:"guide_id"`
-	Cost        *int       `form:"cost"`
-	Status      *int       `form:"status"`
-	PayStatus   *int       `form:"pay_status"`
-	PaidSum     *int       `form:"paid_sum"`
-	CustomerID  *int       `form:"customer_id"`
-	Place       string     `form:"place"`
-	Comment     string     `form:"comment"`
-	Created     *time.Time `form:"created"`
-	Updated     *time.Time `form:"updated"`
-	CreatedBy   *int       `form:"created_by"`
-	Archived    bool       `form:"archived"`
+	Num          *int       `form:"num"`
+	TripID       *int       `form:"trip_id"`
+	TouristCount *int       `form:"tourist_count"`
+	Day          time.Time  `form:"day"`
+	Begin        time.Time  `form:"begin"`
+	TransportID  *int       `form:"transport_id"`
+	GuideID      *int       `form:"guide_id"`
+	Cost         *int       `form:"cost"`
+	Status       *int       `form:"status"`
+	PayStatus    *int       `form:"pay_status"`
+	PaidSum      *int       `form:"paid_sum"`
+	CustomerID   *int       `form:"customer_id"`
+	Place        string     `form:"place"`
+	Comment      string     `form:"comment"`
+	Created      *time.Time `form:"created"`
+	Updated      *time.Time `form:"updated"`
+	CreatedBy    *int       `form:"created_by"`
+	Archived     bool       `form:"archived"`
 }
 
 func (e *GOrder) GetName() string {

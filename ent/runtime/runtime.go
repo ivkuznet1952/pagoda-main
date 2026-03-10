@@ -72,10 +72,10 @@ func init() {
 	gorderDescTripID := gorderFields[1].Descriptor()
 	// gorder.DefaultTripID holds the default value on creation for the trip_id field.
 	gorder.DefaultTripID = gorderDescTripID.Default.(int)
-	// gorderDescCountPerson is the schema descriptor for count_person field.
-	gorderDescCountPerson := gorderFields[2].Descriptor()
-	// gorder.DefaultCountPerson holds the default value on creation for the count_person field.
-	gorder.DefaultCountPerson = gorderDescCountPerson.Default.(int)
+	// gorderDescTouristCount is the schema descriptor for tourist_count field.
+	gorderDescTouristCount := gorderFields[2].Descriptor()
+	// gorder.DefaultTouristCount holds the default value on creation for the tourist_count field.
+	gorder.DefaultTouristCount = gorderDescTouristCount.Default.(int)
 	// gorderDescTransportID is the schema descriptor for transport_id field.
 	gorderDescTransportID := gorderFields[5].Descriptor()
 	// gorder.DefaultTransportID holds the default value on creation for the transport_id field.

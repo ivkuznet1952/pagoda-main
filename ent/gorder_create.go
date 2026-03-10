@@ -48,16 +48,16 @@ func (_c *GOrderCreate) SetNillableTripID(v *int) *GOrderCreate {
 	return _c
 }
 
-// SetCountPerson sets the "count_person" field.
-func (_c *GOrderCreate) SetCountPerson(v int) *GOrderCreate {
-	_c.mutation.SetCountPerson(v)
+// SetTouristCount sets the "tourist_count" field.
+func (_c *GOrderCreate) SetTouristCount(v int) *GOrderCreate {
+	_c.mutation.SetTouristCount(v)
 	return _c
 }
 
-// SetNillableCountPerson sets the "count_person" field if the given value is not nil.
-func (_c *GOrderCreate) SetNillableCountPerson(v *int) *GOrderCreate {
+// SetNillableTouristCount sets the "tourist_count" field if the given value is not nil.
+func (_c *GOrderCreate) SetNillableTouristCount(v *int) *GOrderCreate {
 	if v != nil {
-		_c.SetCountPerson(*v)
+		_c.SetTouristCount(*v)
 	}
 	return _c
 }
@@ -283,9 +283,9 @@ func (_c *GOrderCreate) defaults() {
 		v := gorder.DefaultTripID
 		_c.mutation.SetTripID(v)
 	}
-	if _, ok := _c.mutation.CountPerson(); !ok {
-		v := gorder.DefaultCountPerson
-		_c.mutation.SetCountPerson(v)
+	if _, ok := _c.mutation.TouristCount(); !ok {
+		v := gorder.DefaultTouristCount
+		_c.mutation.SetTouristCount(v)
 	}
 	if _, ok := _c.mutation.TransportID(); !ok {
 		v := gorder.DefaultTransportID
@@ -341,8 +341,8 @@ func (_c *GOrderCreate) check() error {
 	if _, ok := _c.mutation.TripID(); !ok {
 		return &ValidationError{Name: "trip_id", err: errors.New(`ent: missing required field "GOrder.trip_id"`)}
 	}
-	if _, ok := _c.mutation.CountPerson(); !ok {
-		return &ValidationError{Name: "count_person", err: errors.New(`ent: missing required field "GOrder.count_person"`)}
+	if _, ok := _c.mutation.TouristCount(); !ok {
+		return &ValidationError{Name: "tourist_count", err: errors.New(`ent: missing required field "GOrder.tourist_count"`)}
 	}
 	if _, ok := _c.mutation.Day(); !ok {
 		return &ValidationError{Name: "day", err: errors.New(`ent: missing required field "GOrder.day"`)}
@@ -423,9 +423,9 @@ func (_c *GOrderCreate) createSpec() (*GOrder, *sqlgraph.CreateSpec) {
 		_spec.SetField(gorder.FieldTripID, field.TypeInt, value)
 		_node.TripID = value
 	}
-	if value, ok := _c.mutation.CountPerson(); ok {
-		_spec.SetField(gorder.FieldCountPerson, field.TypeInt, value)
-		_node.CountPerson = value
+	if value, ok := _c.mutation.TouristCount(); ok {
+		_spec.SetField(gorder.FieldTouristCount, field.TypeInt, value)
+		_node.TouristCount = value
 	}
 	if value, ok := _c.mutation.Day(); ok {
 		_spec.SetField(gorder.FieldDay, field.TypeTime, value)

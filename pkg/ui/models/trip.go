@@ -90,8 +90,6 @@ type (
 
 func (p *Trips) Render(path string) Node {
 
-	//fmt.Println("///////// 92:", path)
-	//r.Path(routenames.Home)
 	g := make(Group, len(p.Trips))
 
 	for i, trip := range p.Trips {
@@ -110,7 +108,7 @@ func (p *Trips) Render(path string) Node {
 }
 
 func (t *Trip) Render() Node {
-	//func (t *Trip) Render(r *ui.Request) Node {
+	//
 	return Li(
 		Class("list-row"),
 		//Div(

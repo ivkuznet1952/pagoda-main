@@ -17,8 +17,8 @@ const (
 	FieldNum = "num"
 	// FieldTripID holds the string denoting the trip_id field in the database.
 	FieldTripID = "trip_id"
-	// FieldCountPerson holds the string denoting the count_person field in the database.
-	FieldCountPerson = "count_person"
+	// FieldTouristCount holds the string denoting the tourist_count field in the database.
+	FieldTouristCount = "tourist_count"
 	// FieldDay holds the string denoting the day field in the database.
 	FieldDay = "day"
 	// FieldBegin holds the string denoting the begin field in the database.
@@ -58,7 +58,7 @@ var Columns = []string{
 	FieldID,
 	FieldNum,
 	FieldTripID,
-	FieldCountPerson,
+	FieldTouristCount,
 	FieldDay,
 	FieldBegin,
 	FieldTransportID,
@@ -91,8 +91,8 @@ var (
 	DefaultNum int
 	// DefaultTripID holds the default value on creation for the "trip_id" field.
 	DefaultTripID int
-	// DefaultCountPerson holds the default value on creation for the "count_person" field.
-	DefaultCountPerson int
+	// DefaultTouristCount holds the default value on creation for the "tourist_count" field.
+	DefaultTouristCount int
 	// DefaultTransportID holds the default value on creation for the "transport_id" field.
 	DefaultTransportID int
 	// DefaultGuideID holds the default value on creation for the "guide_id" field.
@@ -135,9 +135,9 @@ func ByTripID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldTripID, opts...).ToFunc()
 }
 
-// ByCountPerson orders the results by the count_person field.
-func ByCountPerson(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldCountPerson, opts...).ToFunc()
+// ByTouristCount orders the results by the tourist_count field.
+func ByTouristCount(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldTouristCount, opts...).ToFunc()
 }
 
 // ByDay orders the results by the day field.
