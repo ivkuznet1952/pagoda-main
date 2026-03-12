@@ -19,32 +19,43 @@ import (
 
 type (
 	GOrderForm struct {
-		Name      string
+		//Name      string
 		Tourists  string `form:"tourists" validate:"required"`
 		Day       string `form:"day" validate:"required"`
 		Begin     string `form:"begin" validate:"required"`
 		Transport string `form:"transport" validate:"required"`
+		Cost      string `form:"cost" validate:"required"`
+		Place     string `form:"place" validate:"required"`
 		form.Submission
 	}
 
 	Shedule struct {
 		Resource_type int
+		Resource_id   int
 		Begin         time.Time
 		End           time.Time
 	}
 
-	Transport struct {
-		Id        int
-		Name      string
-		Max_count int
-		Min_count int
-	}
+	//Transport struct {
+	//	Id        int
+	//	Name      string
+	//	Max_count int
+	//	Min_count int
+	//	Cost      int
+	//}
 
 	Cost struct {
-		//Id        int
 		Cost         int
 		Transport_id int
 	}
+
+	GuideId struct {
+		Id int
+	}
+
+	//TransportId struct {
+	//	Id int
+	//}
 
 	GOrderParam struct {
 		Trip       ent.Trip
@@ -55,9 +66,8 @@ type (
 		Y1         int
 		Y2         int
 		Shedules   []Shedule
-		GuideCount int
-		Transports []Transport
-		GCosts     []Cost
+		Guides     []OrderGuide
+		Transports []OrderTransport
 	}
 
 	TripDuration struct {
@@ -81,7 +91,7 @@ func (f *GOrderForm) Render(r *ui.Request, trip *GOrderParam) Node {
 		Strong(
 			x.Bind("style", "item.active && { color: 'green'}"),
 			x.Text("item.value"),
-			x.On("click", " tourist_array.forEach(c => c.active=false); item.active=true; "+
+			x.On("click", " order_day = ''; order_begin = [], order_transport = ''; tourist_array.forEach(c => c.active=false); item.active=true; "+
 				" $nextTick(() => { tourist_count = item.value });"),
 		),
 	)
@@ -92,27 +102,33 @@ func (f *GOrderForm) Render(r *ui.Request, trip *GOrderParam) Node {
 		_ = i
 		calendar = calendar + "<template x-cloak x-if='tourist_count ==" + strconv.Itoa(i+1) + "&& checked_month == " +
 			strconv.Itoa(trip.M0) + "'>" + convertNodeToString(Calendar(OptionsParamsCalendar{
-			//Label:   strconv.Itoa(i + 1),
 			Label:   "",
 			Month:   trip.M0,
 			Year:    trip.Y0,
-			Options: initCalendarDays(trip.Shedules, i+1, trip.Trip, time.Now().Day(), trip.M0, trip.Y0, trip.GuideCount, trip.Transports),
+			Options: initCalendarDays(trip.Shedules, i+1, trip.Trip, time.Now().Day(), trip.M0, trip.Y0, trip.Guides, trip.Transports),
 		})) + "</template>"
 		calendar = calendar + "<template x-cloak x-if='tourist_count ==" + strconv.Itoa(i+1) + "&& checked_month == " +
 			strconv.Itoa(trip.M1) + "'>" + convertNodeToString(Calendar(OptionsParamsCalendar{
 			Label:   "",
 			Month:   trip.M1,
 			Year:    trip.Y1,
-			Options: initCalendarDays(trip.Shedules, i+1, trip.Trip, 0, trip.M1, trip.Y1, trip.GuideCount, trip.Transports),
+			Options: initCalendarDays(trip.Shedules, i+1, trip.Trip, 0, trip.M1, trip.Y1, trip.Guides, trip.Transports),
 		})) + "</template>"
 		calendar = calendar + "<template x-cloak x-if='tourist_count ==" + strconv.Itoa(i+1) + "&& checked_month == " +
 			strconv.Itoa(trip.M2) + "'>" + convertNodeToString(Calendar(OptionsParamsCalendar{
 			Label:   "",
 			Month:   trip.M2,
 			Year:    trip.Y2,
-			Options: initCalendarDays(trip.Shedules, i+1, trip.Trip, 0, trip.M2, trip.Y2, trip.GuideCount, trip.Transports),
+			Options: initCalendarDays(trip.Shedules, i+1, trip.Trip, 0, trip.M2, trip.Y2, trip.Guides, trip.Transports),
 		})) + "</template>"
 	}
+
+	warningArray := make([]string, 5)
+	warningArray[0] = "Задайте количество туристов!"
+	warningArray[1] = "Задайте день проведения экскурсии!"
+	warningArray[2] = "Задайте период проведения экскурсии!"
+	warningArray[3] = "Задайте транспорт!"
+	warningArray[4] = "Задайте время и место подачи транспорта!"
 
 	return Form(
 
@@ -120,22 +136,43 @@ func (f *GOrderForm) Render(r *ui.Request, trip *GOrderParam) Node {
 		Method(http.MethodPost),
 		Attr("hx-post", r.Path(routenames.GOrderSubmit)),
 
-		//g,
-
-		//	Badge(ColorSuccess, f.Day),
-
 		Div(
-			x.Data("{ order_transport: '', order_day: '', order_begin: '', begin_list: [], transport_list: [], tourist: 0, "+
+			x.Data("{ order_place: '', order_cost: '', order_transport: '', order_day: '', order_begin: '', begin_list: [], transport_list: [], "+
 				"tourist_array: [{value:1, active: false }, {value:2, active: false }, {value:3, active: false },"+
 				"{value:4, active: false }, {value:5, active: false }, {value:6, active: false },"+
 				"{value:7, active: false }, {value:8, active: false }, {value:9, active: false }, "+
-				"{value:10, active: false }],"+
+				"{value:10, active: false }], warn: [{e: false}, {e: false},{e: false}, {e: false}, {e: false}, {e: false}],"+
 				" tourist_count: 0, checked_month: '"+strconv.Itoa(trip.M0)+"'}"),
-			P(),
+
+			Div(
+				x.Show("tourist_count == 0"),
+				Badge(ColorWarning, warningArray[0]),
+			),
+			Div(
+				x.Show("tourist_count > 0 && order_day == ''"),
+				Badge(ColorWarning, warningArray[1]),
+			),
+			Div(
+				x.Show("tourist_count > 0 && order_day != '' && order_begin == ''"),
+				Badge(ColorWarning, warningArray[2]),
+			),
+
+			Div(
+				x.Show("tourist_count > 0 && order_day != '' && order_begin != '' && order_transport == ''"),
+				Badge(ColorWarning, warningArray[3]),
+			),
+
+			Div(
+				x.Show("tourist_count > 0 && order_day != '' && order_begin != '' && order_transport != '' && "+
+					" order_place == ''"),
+				Badge(ColorWarning, warningArray[4]),
+			),
+
+			//P(),
 			header("Наименование экскурсии"),
 			P(),
 			Div(
-				//Class("bg-base-200 p-2"),
+				Class("ml-8"),
 				Text(trip.Trip.Name),
 			),
 
@@ -143,11 +180,16 @@ func (f *GOrderForm) Render(r *ui.Request, trip *GOrderParam) Node {
 			header("Количество туристов (включая детей 12 лет и старше)"),
 			P(),
 			Div(
-				Class("flex flex-wrap gap-8"),
+				Class("flex flex-wrap gap-8 ml-8"),
 				touristCountList,
 			),
 
 			P(),
+
+			//Div(
+			//	Text("TEXT"),
+			//	Class("bg-[#191e24]"),
+			//),
 
 			Div(
 				x.Show("tourist_count > 0"),
@@ -155,8 +197,8 @@ func (f *GOrderForm) Render(r *ui.Request, trip *GOrderParam) Node {
 			),
 			P(),
 			Div(
-
 				x.Show("tourist_count > 0"),
+				//Class("ml-8"),
 				MonthChooser(MonthChooserOptionsParams{
 					Value: trip.M0,
 					Options: []Choice{
@@ -169,50 +211,95 @@ func (f *GOrderForm) Render(r *ui.Request, trip *GOrderParam) Node {
 
 			Raw(calendar),
 
+			P(),
+
+			Div(
+				x.Show("tourist_count > 0 && order_transport != '' && order_begin != ''"),
+				header("Стоимость"),
+			),
+			Div(
+				x.Show("tourist_count > 0 && order_transport != '' && order_begin != ''"),
+				Class("ml-8"),
+				x.Text("order_cost"),
+			),
+			P(),
+
+			Div(
+				x.Show("tourist_count > 0 && order_transport != '' && order_begin != ''"),
+				header("Место и время подачи транспорта"),
+			),
+
+			Div(
+				x.Show("tourist_count > 0 && order_transport != '' && order_begin != ''"),
+				Class("ml-8"),
+				TextareaFieldPlace(TextareaFieldParamsPlace{
+					Form:      f,
+					FormField: "Place",
+					Name:      "place",
+					Label:     "",
+					Value:     f.Place,
+				}),
+			),
 			Div(
 				InputFieldTourist(
 					InputFieldParamsTourist{
 						Name: "Tourists",
 					}),
-				Style("background-color: gray;"),
+				//Style("background-color: gray;"),
 			),
-			P(),
+			//P(),
 			Div(
 				InputFieldDay(
 					InputFieldParamsDay{
 						Name: "Day",
 					}),
-				Style("background-color: green;"),
+				//	Style("background-color: green;"),
 			),
-			P(),
+			//P(),
 			Div(
 				InputFieldBegin(
 					InputFieldParamsBegin{
 						Name: "Begin",
 					}),
-				Style("background-color: blue;"),
+				//Style("background-color: blue;"),
 			),
-			P(),
+			//P(),
 			Div(
 				InputFieldTransport(
 					InputFieldParamsTransport{
 						Name: "Transport",
 					}),
-				Style("background-color: red; "),
+				//Style("background-color: red;"),
 			),
-			P(),
+			//P(),
+			Div(
+				InputFieldCost(
+					InputFieldParamsCost{
+						Name: "Cost",
+					}),
+				//Style("background-color: orange;"),
+			),
+			Div(
+				x.Text("order_place"),
+			),
+			//Div(
+			//	Text("AAAAAAA"),
+			//	x.Text("len(transport_list)"),
+			//),
+
+			ControlGroup(
+				//
+				FormButton(ColorPrimary, "Оформить заказ"),
+			),
 		),
 
-		ControlGroup(
-			FormButton(ColorPrimary, "Оформить заказ"),
-		),
 		CSRF(r),
 	)
 }
 
 // func initCalendarDays(node Node, touristCount int, trip ent.Trip, today int, days []ChoiceDate,
 func initCalendarDays(shedules []Shedule, touristCount int, trip ent.Trip, today int,
-	month int, year int, guideCount int, transports []Transport) []ChoiceDate {
+	month int, year int, guides []OrderGuide, transports []OrderTransport) []ChoiceDate {
 
 	firstDayOfWeek := time.Date(year, time.Month(month), 1, 0, 0, 0, 0, time.UTC) // first day of week
 	daysOfMonth := time.Date(year, time.Month(month+1), 0, 0, 0, 0, 0, time.UTC)  // days of month
@@ -258,30 +345,41 @@ func initCalendarDays(shedules []Shedule, touristCount int, trip ent.Trip, today
 			// TODO
 			for j := range tripDurations {
 				//if month == 3 && (days[i].Day == 10) {
-				b1 := time.Date(year, time.Month(month), days[i].Day, tripDurations[j].begin.Hour(), tripDurations[j].begin.Minute(), 0, 0, time.UTC)
-				e1 := time.Date(year, time.Month(month), days[i].Day, tripDurations[j].end.Hour(), tripDurations[j].end.Minute(), 0, 0, time.UTC)
+				b := time.Date(year, time.Month(month), days[i].Day, tripDurations[j].begin.Hour(), tripDurations[j].begin.Minute(), 0, 0, time.UTC)
+				e := time.Date(year, time.Month(month), days[i].Day, tripDurations[j].end.Hour(), tripDurations[j].end.Minute(), 0, 0, time.UTC)
 
-				hasFreeGuide := hasFreeResourceForDate(shedules, ui.GUIDE_TYPE, guideCount, b1, e1)
+				//hasFreeGuide := hasFreeResourceForDate(shedules, ui.GUIDE_TYPE, len(guides), b, e)
 
-				allowTransports := ui.Filter(transports, func(transport Transport) bool {
+				resourcedShedules := ui.Filter(shedules, func(shedule Shedule) bool {
+					return ((shedule.Begin.Before(b) || shedule.Begin.Equal(b)) &&
+						(shedule.End.After(b) || shedule.End.Equal(e)) && (shedule.End.Before(e) || shedule.End.Equal(e))) ||
+						((shedule.Begin.After(b) || shedule.Begin.Equal(b)) && (shedule.End.Before(e) || shedule.End.Equal(e))) ||
+						((shedule.Begin.After(b) || shedule.Begin.Equal(b)) && (shedule.Begin.Before(e) || shedule.Begin.Equal(e)) &&
+							(shedule.End.After(e) || shedule.End.Equal(e)))
+				})
+				_ = resourcedShedules
+
+				allowTransports := ui.Filter(transports, func(transport OrderTransport) bool {
 					return touristCount >= transport.Min_count && touristCount <= transport.Max_count
 				})
-				//_ = allowTransports
+				_ = allowTransports
 
-				arr := make([]OrderTransport, len(allowTransports))
+				orderTransports := hasFreeResourceForTransport(resourcedShedules, allowTransports)
+				//orderTransports := make([]OrderTransport, len(arrayTransport))
+				//for k := range arrayTransport {
+				//	orderTransports[k] = OrderTransport{Id: arrayTransport[k].Id, Name: arrayTransport[k].Name, Cost: allowTransports[k].Cost}
+				//}
 
-				for k := range allowTransports {
-					//_ = k
-					arr[k] = OrderTransport{Id: allowTransports[k].Id, Name: allowTransports[k].Name}
-				}
-				//_ = arr
-				days[i].OrderTransports = arr
-				hasFreeTransport := hasFreeResourceForDate(shedules, ui.TRANSPORT_TYPE, len(arr), b1, e1)
+				// TODO
+				hasFreeTransport := true
+				hasFreeGuide := true
+				orderGuides := make([]OrderGuide, 0)
 				//_ = hasFreeTransport
 				if hasFreeGuide && hasFreeTransport {
-					hourDuration := HourDuration{H0: b1.Hour(), M0: b1.Minute(), H1: e1.Hour(), M1: e1.Minute()}
+					hourDuration := HourDuration{H0: b.Hour(), M0: b.Minute(), H1: e.Hour(), M1: e.Minute(), OrderTransports: orderTransports, OrderGuides: orderGuides}
 					days[i].HourDurations = append(days[i].HourDurations, hourDuration)
 				}
+
 			}
 		}
 		if len(days[i].HourDurations) == 0 {
@@ -295,16 +393,66 @@ func initCalendarDays(shedules []Shedule, touristCount int, trip ent.Trip, today
 // check resources
 func hasFreeResourceForDate(shedules []Shedule, resourceType int, resourceCount int, b time.Time, e time.Time) bool {
 	// Use the generic Filter function
-	resourcedShedules := ui.Filter(shedules, func(shedule Shedule) bool {
+	resourcedShedulesDate := ui.Filter(shedules, func(shedule Shedule) bool {
 		return shedule.Resource_type == resourceType && (((shedule.Begin.Before(b) || shedule.Begin.Equal(b)) &&
 			(shedule.End.After(b) || shedule.End.Equal(e)) && (shedule.End.Before(e) || shedule.End.Equal(e))) ||
 			((shedule.Begin.After(b) || shedule.Begin.Equal(b)) && (shedule.End.Before(e) || shedule.End.Equal(e))) ||
 			((shedule.Begin.After(b) || shedule.Begin.Equal(b)) && (shedule.Begin.Before(e) || shedule.Begin.Equal(e)) &&
 				(shedule.End.After(e) || shedule.End.Equal(e))))
 	})
-	_ = resourcedShedules
+	_ = resourcedShedulesDate
 
+	resourcedShedules := ui.Filter(resourcedShedulesDate, func(shedule Shedule) bool {
+
+		return true
+	})
 	return len(resourcedShedules) < resourceCount
+}
+
+func hasFreeResourceForTransport(shedules []Shedule, transports []OrderTransport) []OrderTransport {
+
+	shedulesTransport := ui.Filter(shedules, func(shedule Shedule) bool {
+		return shedule.Resource_type == ui.TRANSPORT_TYPE
+	})
+
+	arr := make([]OrderTransport, 0)
+	for k := range transports {
+		found := false
+		for j := range shedulesTransport {
+			if shedulesTransport[j].Resource_id == transports[k].Id {
+				found = true
+			}
+		}
+		if !found {
+			arr = append(arr, transports[k])
+		} else {
+			found = false
+		}
+	}
+	return arr
+}
+
+func hasFreeResourceForGuide(shedules []Shedule, guides []OrderGuide) []OrderGuide {
+
+	shedulesGuide := ui.Filter(shedules, func(shedule Shedule) bool {
+		return shedule.Resource_type == ui.GUIDE_TYPE
+	})
+
+	arr := make([]OrderGuide, 0)
+	for k := range guides {
+		found := false
+		for j := range shedulesGuide {
+			if shedulesGuide[j].Resource_id == guides[k].Id {
+				found = true
+			}
+		}
+		if !found {
+			arr = append(arr, guides[k])
+		} else {
+			found = false
+		}
+	}
+	return arr
 }
 
 func generateTripDuration(tr ent.Trip) []TripDuration {
@@ -370,20 +518,3 @@ func convertNodeToString(myNode Node) string {
 	htmlString := buf.String()
 	return htmlString
 }
-
-//func getCalendar(trip *GOrderParam, touristCount int) Node {
-//
-//	return Calendar(OptionsParamsCalendar{
-//		Label:   "111111111",
-//		Month:   trip.M0,
-//		Year:    trip.Y0,
-//		Options: initCalendarDays(trip.Shedules, touristCount, trip.Trip, time.Now().Day(), 2, 2026, 2),
-//	})
-//}
-
-//func baka(group Group) string {
-//	test(myNode)
-//fmt.Println("##################### baka")
-//group = append(group, Text("VALUE 11111111111111111111"))
-//return ""
-//}

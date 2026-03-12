@@ -39,7 +39,7 @@ func (f *Task) Render(r *ui.Request) Node {
 			Name:      "message",
 			Label:     "Message",
 			Value:     f.Message,
-			Help:      "The message the task will output to the log",
+			//Help:      "The message the task will output to the log",
 		}),
 		ControlGroup(
 			FormButton(ColorPrimary, "Add task to queue"),

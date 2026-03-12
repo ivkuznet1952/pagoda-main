@@ -1,8 +1,6 @@
 package pages
 
 import (
-	"fmt"
-
 	"github.com/labstack/echo/v4"
 	"github.com/mikestefanello/pagoda/pkg/ui"
 	. "github.com/mikestefanello/pagoda/pkg/ui/components"
@@ -48,8 +46,8 @@ func ContactUs(ctx echo.Context, form *forms.Contact) error {
 		//}),
 		Iff(!form.IsDone(), func() Node {
 
-			fmt.Println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$: " + form.Email)
-			form.Email = "11@mail.com"
+			//fmt.Println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$: " + form.Email)
+			//form.Email = "11@mail.com"
 			//form.Message = form.Email
 			return form.Render(r)
 		}),

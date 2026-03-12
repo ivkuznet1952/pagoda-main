@@ -42,6 +42,11 @@ type (
 		Label string
 	}
 
+	InputFieldParamsCost struct {
+		Name  string
+		Label string
+	}
+
 	FileFieldParams struct {
 		Name  string
 		Label string
@@ -83,10 +88,12 @@ type (
 	}
 
 	HourDuration struct {
-		H0 int
-		M0 int
-		H1 int
-		M1 int
+		H0              int
+		M0              int
+		H1              int
+		M1              int
+		OrderTransports []OrderTransport
+		OrderGuides     []OrderGuide
 	}
 
 	OptionsParamsOrderPeriod struct {
@@ -97,8 +104,15 @@ type (
 	}
 
 	OrderTransport struct {
-		Id   int
-		Name string
+		Id        int
+		Name      string
+		Cost      int
+		Max_count int
+		Min_count int
+	}
+
+	OrderGuide struct {
+		Id int
 	}
 
 	ChoiceDate struct {
@@ -119,7 +133,16 @@ type (
 		Name      string
 		Label     string
 		Value     string
-		Help      string
+		//Help      string
+	}
+
+	TextareaFieldParamsPlace struct {
+		Form      form.Form
+		FormField string
+		Name      string
+		Label     string
+		Value     string
+		//Help      string
 	}
 
 	CheckboxParams struct {
@@ -142,10 +165,27 @@ func TextareaField(el TextareaFieldParams) Node {
 	return Fieldset(
 		el.Label,
 		Textarea(
-			Class("textarea h-24 w-2/3 "+formFieldStatusClass(el.Form, el.FormField)),
+			//Class("textarea h-24 w-2/3 "+formFieldStatusClass(el.Form, el.FormField)),
+			Class("textarea h-24 w-full"),
 			ID(el.Name),
 			Name(el.Name),
 			Text(el.Value),
+		),
+		//Help(el.Help),
+		formFieldErrors(el.Form, el.FormField),
+	)
+}
+
+func TextareaFieldPlace(el TextareaFieldParamsPlace) Node {
+	return Fieldset(
+		el.Label,
+		Textarea(
+			//Class("textarea h-24 w-2/3 "+formFieldStatusClass(el.Form, el.FormField)),
+			Class("textarea h-24 w-full"),
+			ID(el.Name),
+			Name(el.Name),
+			Text(el.Value),
+			x.Model("order_place"),
 		),
 		//Help(el.Help),
 		formFieldErrors(el.Form, el.FormField),
@@ -204,7 +244,7 @@ func MonthChooser(el MonthChooserOptionsParams) Node {
 				Value(opt.Value),
 				Class("radio mr-1 "), //+formFieldStatusClass(el.Form, el.FormField)),
 				If(strconv.Itoa(el.Value) == opt.Value, Checked()),
-				x.On("click", "if (checked_month != "+opt.Value+") {order_day=''; order_begin = ''; begin_list = [];}"),
+				x.On("click", "if (checked_month != "+opt.Value+") {order_day=''; order_begin = ''; begin_list = []; transport_list = [];}"),
 				x.Model("checked_month"),
 			),
 			Label(
@@ -212,7 +252,6 @@ func MonthChooser(el MonthChooserOptionsParams) Node {
 				For(id),
 			),
 		)
-		//for (let i = 0; i < begin_list.length; i++) {begin_list[i].active = false;}};
 	}
 
 	return Fieldset(
@@ -231,7 +270,10 @@ func setOrderPeriod(h []HourDuration) string {
 	for i := range h {
 		value := addZeroToStr(strconv.Itoa(h[i].H0)) + ":" + addZeroToStr(strconv.Itoa(h[i].M0)) + " - " +
 			addZeroToStr(strconv.Itoa(h[i].H1)) + ":" + addZeroToStr(strconv.Itoa(h[i].M1))
-		s = s + "{id: '" + strconv.Itoa(i) + "', value: '" + value + "', active: false},"
+		s = s + "{id: '" + strconv.Itoa(i) + "', value: '" + value + "', transports: " + setOrderTransport(h[i].OrderTransports) + ", active: false},"
+		//for j := range h[i].OrderTransports {
+		//s = s + " transport_list: " + setOrderTransport(h[i].OrderTransports)
+		//}
 	}
 	s = s[0:len(s)-1] + "]"
 	return s
@@ -239,12 +281,15 @@ func setOrderPeriod(h []HourDuration) string {
 
 func setOrderTransport(h []OrderTransport) string {
 
+	//fmt.Println(len(h))
 	s := "["
 	for i := range h {
-		value := "{ id: " + strconv.Itoa(h[i].Id) + ", name:'" + h[i].Name + "', active: false},"
+		value := "{ Id: " + strconv.Itoa(h[i].Id) + ", Name:'" + h[i].Name + "', Cost:" + strconv.Itoa(h[i].Cost) +
+			", active: false},"
 		s = s + value
 	}
 	s = s[0:len(s)-1] + "]"
+	//fmt.Println(s)
 	return s
 }
 
@@ -261,7 +306,6 @@ func Calendar(el OptionsParamsCalendar) Node {
 			Div(
 				Raw("&#x25A0;"),
 			),
-
 			Span(
 				Class("w-4 ml-1"),
 				Strong(Text(strconv.Itoa(opt.Day))),
@@ -311,41 +355,56 @@ func Calendar(el OptionsParamsCalendar) Node {
 		),
 
 		Div(
-			x.Show("begin_list.length > 0"),
+			x.Show("order_day != '' && begin_list.length > 0"),
 			Class("menu-title mt-3 uppercase bg-base-200 p-2"),
 			Span(Text("Период проведение экскурсии (начало/окончание)")),
 		),
 		Div(
-			Class("flex flex-wrap gap-8"),
+			Class("flex flex-wrap gap-8 ml-8"),
+			x.Show("order_day != ''"),
 			Template(
 				x.For("(item, index) in begin_list"),
 				Div(
 					Strong(
 						x.Bind("style", "item.active && { color: 'green'}"),
 						x.Text("item.value"),
-						x.On("click", "order_begin = item.value; "+
+						x.On("click", "order_begin = item.value; transport_list = []; "+
 							" for (let i = 0; i < begin_list.length; i++) {"+
 							" begin_list[i].active = false;  "+
 							"}; "+
-							"; setTimeout(() => {item.active=true;}, 20); "),
+							"; setTimeout(() => {"+
+							"item.active=true;"+
+							"transport_list = item.transports"+
+							//" $nextTick(() => { for (let i = 0; i < item.transports.length; i++) { "+
+							//" transport_list.push(item.transports[i]);}  });"+
+							//"for (let i = 0; i < item.transports[index].length; i++) {"+
+							//"transport_list.push(item.transports[index][i]);}"+
+							//"} ,"+
+							"}, 20);"),
 					),
 				),
 			),
 		),
+		//for (let i = 0; i < item.transports[index].length; i++) {transport_list.push(item.transports[i]};
 		Div(
-			x.Show("transport_list.length > 0"),
+			//x.Show("order_day != '' && transport_list.length > 0"),
 			Class("menu-title mt-3 uppercase bg-base-200 p-2"),
 			Span(Text("Транспорт")),
+			//x.Text("transport_list.length"),
 		),
 		Div(
-			Class("flex flex-wrap gap-8"),
+			Class("flex flex-wrap gap-8 ml-8"),
+			//x.Show("order_day != '' && transport_list.length > 0"),
+			//x.Model("transport_list"),
 			Template(
-				x.For("(item, index) in transport_list"),
+				//x.For("(item, index) in transport_list"),
+				x.For("item in transport_list"),
+				//x.Model("transport_list"),
 				Div(
 					Strong(
 						x.Bind("style", "item.active && { color: 'green'}"),
-						x.Text("item.name"),
-						x.On("click", "order_transport = item.id; "+
+						x.Text("item.Name"),
+						x.On("click", "order_transport = item.id; order_cost = item.cost; "+
 							" for (let i = 0; i < transport_list.length; i++) {"+
 							" transport_list[i].active = false;  "+
 							"}; "+
@@ -393,25 +452,25 @@ func updateDayColor(el OptionsParamsCalendar, current int, opt ChoiceDate) strin
 
 	el.Value = current
 
-	var s = "order_day='" + getDay(el.Options[current]) + "'; "
+	var s = "transport_list = []; order_day='" + getDay(el.Options[current]) + "'; "
 	if opt.IsVisible || opt.IsEnabled {
 		if len(opt.HourDurations) == 0 {
 			s = s + "begin_list = []; begin_list[0]='Нет доступного времени экскурсии!'; "
 		}
-		if len(opt.OrderTransports) == 0 {
-			s = s + "transport_list = []; transport_list[0]='Нет доступного транспорта!'; "
-		}
+		//if len(opt.OrderTransports) == 0 {
+		//	s = s + "transport_list = []; transport_list[0]='Нет доступного транспорта!'; "
+		//}
 		if len(opt.HourDurations) > 0 {
 			a := setOrderPeriod(opt.HourDurations)
 			s = s + "begin_list=" + a + "; "
 		}
-		if len(opt.OrderTransports) > 0 {
-			a := setOrderTransport(opt.OrderTransports)
-			s = s + "transport_list=" + a + "; "
-		}
+		//if len(opt.OrderTransports) > 0 {
+		//	a := setOrderTransport(opt.OrderTransports)
+		//	s = s + "transport_list=" + a + "; "
+		//}
 	}
 	if !opt.IsVisible || !opt.IsEnabled {
-		s = s + "begin_list=[]; transport_list=[];"
+		//s = s + "begin_list=[]; transport_list=[];"
 	}
 
 	l := len(el.Options)
@@ -469,6 +528,7 @@ func FieldsetCalendar(label string, els ...Node) Node {
 	)
 }
 
+/*
 func formFieldErrorsCalendar(fm form.Form, field string) Node {
 	if fm == nil {
 		return nil
@@ -489,7 +549,8 @@ func formFieldErrorsCalendar(fm form.Form, field string) Node {
 
 	return g
 }
-
+*/
+/*
 func formFieldStatusClassCalendar(fm form.Form, formField string) string {
 
 	switch {
@@ -502,7 +563,7 @@ func formFieldStatusClassCalendar(fm form.Form, formField string) string {
 	default:
 		return "input-success"
 	}
-}
+} */
 
 func SelectList(el OptionsParams) Node {
 	buttons := make(Group, len(el.Options))
@@ -550,7 +611,8 @@ func InputField(el InputFieldParams) Node {
 			ID(el.Name),
 			Name(el.Name),
 			Type(el.InputType),
-			Class("input "+formFieldStatusClass(el.Form, el.FormField)),
+			//Class("input "+formFieldStatusClass(el.Form, el.FormField)),
+			Class("input"),
 			Value(el.Value),
 			If(el.Placeholder != "", Placeholder(el.Placeholder)),
 		),
@@ -565,7 +627,7 @@ func InputFieldTourist(el InputFieldParamsTourist) Node {
 		Input(
 			x.Model("tourist_count"),
 			Name(el.Name),
-			//Class("hidden"),
+			Class("hidden"),
 		),
 	)
 }
@@ -576,7 +638,7 @@ func InputFieldDay(el InputFieldParamsDay) Node {
 		Input(
 			x.Model("order_day"),
 			Name(el.Name),
-			//Class("hidden"),
+			Class("hidden"),
 		),
 	)
 }
@@ -587,7 +649,7 @@ func InputFieldBegin(el InputFieldParamsBegin) Node {
 		Input(
 			x.Model("order_begin"),
 			Name(el.Name),
-			//Class("hidden"),
+			Class("hidden"),
 		),
 	)
 }
@@ -598,7 +660,18 @@ func InputFieldTransport(el InputFieldParamsTransport) Node {
 		Input(
 			x.Model("order_transport"),
 			Name(el.Name),
-			//Class("hidden"),
+			Class("hidden"),
+		),
+	)
+}
+
+func InputFieldCost(el InputFieldParamsCost) Node {
+	return Fieldset(
+		el.Label,
+		Input(
+			x.Model("order_cost"),
+			Name(el.Name),
+			Class("hidden"),
 		),
 	)
 }
@@ -671,6 +744,7 @@ func CSRF(r *ui.Request) Node {
 func FormButton(color Color, label string) Node {
 	return Button(
 		Class("btn "+buttonColor(color)),
+		//x.Bind("disabled", "tourist_count == 0"),
 		Text(label),
 	)
 }

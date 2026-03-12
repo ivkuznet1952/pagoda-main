@@ -70,7 +70,7 @@ func GOrderUs(ctx echo.Context, form *forms.GOrderForm, trip *forms.GOrderParam)
 			//if len(transports) == 1 {
 			//	transportName = transports[0].Name
 			//}
-			return Badge(ColorSuccess, form.Tourists+" "+form.Day+" "+form.Begin+" "+form.Transport)
+			return Badge(ColorSuccess, form.Tourists+" "+form.Day+" "+form.Begin+" "+form.Transport+" "+form.Cost)
 		}),
 
 		//Iff(!form.IsDone(), func() Node {

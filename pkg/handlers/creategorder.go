@@ -16,6 +16,8 @@ import (
 	"github.com/mikestefanello/pagoda/pkg/form"
 	"github.com/mikestefanello/pagoda/pkg/routenames"
 	"github.com/mikestefanello/pagoda/pkg/services"
+	"github.com/mikestefanello/pagoda/pkg/ui"
+	"github.com/mikestefanello/pagoda/pkg/ui/components"
 	"github.com/mikestefanello/pagoda/pkg/ui/forms"
 	"github.com/mikestefanello/pagoda/pkg/ui/pages"
 )
@@ -24,25 +26,6 @@ type (
 	GOrderORM struct {
 		orm *ent.Client
 	}
-
-	//TripDuration struct {
-	//	begin time.Time
-	//	end   time.Time
-	//}
-
-	//GOrderParam struct {
-	//	Trip     ent.Trip
-	//	M0       int
-	//	M1       int
-	//	M2       int
-	//	Y0       int
-	//	Y1       int
-	//	Y2       int
-	//	Shedules []ent.Shedule
-	//Days0 []components.ChoiceDate
-	//Days1 []components.ChoiceDate
-	//Days2 []components.ChoiceDate
-	//}
 )
 
 func init() {
@@ -99,6 +82,7 @@ func (h *GOrderORM) Page(ctx echo.Context) error {
 		//}
 		var v []struct {
 			Resource_type int
+			Resource_id   int
 			Begin         time.Time
 			End           time.Time
 		}
@@ -108,7 +92,7 @@ func (h *GOrderORM) Page(ctx echo.Context) error {
 				shedule.BeginGT(now),
 			).
 			Unique(true).
-			Select(shedule.FieldResourceType, shedule.FieldBegin, shedule.FieldEnd).Scan(ctx.Request().Context(), &v)
+			Select(shedule.FieldResourceType, shedule.FieldResourceID, shedule.FieldBegin, shedule.FieldEnd).Scan(ctx.Request().Context(), &v)
 
 		shedules := make([]forms.Shedule, len(v))
 		if errShedule == nil {
@@ -131,12 +115,21 @@ func (h *GOrderORM) Page(ctx echo.Context) error {
 			).
 			Unique(true).
 			Select(transport.FieldID, transport.FieldName, transport.FieldMinCount, transport.FieldMaxCount).Scan(ctx.Request().Context(), &trans)
-		transports := make([]forms.Transport, len(trans))
-		//_ = transports
+
+		//transports := make([]forms.Transport, len(trans))
+
+		transports := make([]components.OrderTransport, len(trans))
+		_ = transports
 		if errTransport == nil {
 			for i := range trans {
-				//_ = i
-				transports[i] = trans[i]
+				transports[i] = components.OrderTransport{Id: trans[i].Id, Name: trans[i].Name, Min_count: trans[i].Min_count,
+					Max_count: trans[i].Max_count, Cost: 0}
+				filteredCost := ui.Filter(costs, func(cost forms.Cost) bool {
+					return cost.Transport_id == trans[i].Id
+				})
+				if (len(filteredCost)) == 1 {
+					transports[i].Cost = filteredCost[0].Cost
+				}
 			}
 		}
 		if errTransport != nil {
@@ -144,7 +137,30 @@ func (h *GOrderORM) Page(ctx echo.Context) error {
 			tr = nil
 		}
 
-		guideCount, errGuide := h.orm.Guide.Query().Where(guide.Active(true)).Count(ctx.Request().Context())
+		var gdes []struct {
+			Id int
+		}
+		_ = gdes
+
+		errGuides := h.orm.Guide.Query().
+			Where(
+				guide.Active(true),
+			).
+			Unique(true).
+			Select(guide.FieldID).Scan(ctx.Request().Context(), &gdes)
+		guides := make([]components.OrderGuide, len(gdes))
+		_ = guides
+		if errGuides == nil {
+			for i := range gdes {
+				guides[i] = components.OrderGuide{Id: gdes[i].Id}
+			}
+		}
+		if errGuides != nil {
+			fmt.Println("ERR_GUIDES: " + errGuides.Error())
+			tr = nil
+		}
+
+		//guideCount, errGuide := h.orm.Guide.Query().Where(guide.Active(true)).Count(ctx.Request().Context())
 
 		// create trip shedule for current date
 		if errTrip != nil {
@@ -155,10 +171,10 @@ func (h *GOrderORM) Page(ctx echo.Context) error {
 			fmt.Println("ERR: " + errGCost.Error())
 			tr = nil
 		}
-		if errGuide != nil {
-			fmt.Println("ERR_GUIDE: " + errGuide.Error())
-			tr = nil
-		}
+		//if errGuide != nil {
+		//	fmt.Println("ERR_GUIDE: " + errGuide.Error())
+		//	tr = nil
+		//}
 
 		if tr != nil {
 			m0 := int(now.Month())
@@ -183,7 +199,8 @@ func (h *GOrderORM) Page(ctx echo.Context) error {
 			}
 
 			t := forms.GOrderParam{Trip: *tr, M0: m0, M1: m1, M2: m2, Y0: y0, Y1: y1, Y2: y2, Shedules: shedules,
-				GuideCount: guideCount, Transports: transports, GCosts: costs}
+				Guides: guides, Transports: transports}
+			//fmt.Println(transports)
 			return pages.GOrderUs(ctx, f, &t)
 		}
 	}
@@ -208,6 +225,8 @@ func (h *GOrderORM) Submit(ctx echo.Context) error {
 	//fmt.Println("#####//////////////////////111111 handler input DATE: " + input.Day)
 	//fmt.Println("#####//////////////////////111111 handler input HOUR: " + input.Begin)
 	//fmt.Println("#####//////////////////////111111 handler input TRANSPORT: " + input.Transport)
-	//fmt.Println("##### SUBMIT")
+	//fmt.Println("#####//////////////////////111111 handler input TRANSPORT: " + input.Cost)
+	//fmt.Println("#####//////////////////////111111 handler input PLACE: " + input.Place)
+	//fmt.Println("##### SUBMIT") oklch(0.2326 0.014 253.100006
 	return h.Page(ctx)
 }
