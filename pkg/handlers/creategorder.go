@@ -75,11 +75,8 @@ func (h *GOrderORM) Page(ctx echo.Context) error {
 			for i := range costs {
 				costs[i] = forms.Cost{Transport_id: gcosts[i].TransportID, Cost: gcosts[i].Cost}
 			}
-			//costs[i]
 		}
-		//if errGCost = nil {
-		//	costs = &[]GCost
-		//}
+
 		var v []struct {
 			Resource_type int
 			Resource_id   int
@@ -101,42 +98,62 @@ func (h *GOrderORM) Page(ctx echo.Context) error {
 			}
 		}
 
-		var trans []struct {
-			Id        int
-			Name      string
-			Max_count int
-			Min_count int
-		}
-		//_ = trans
+		transports := make([]components.OrderTransport, 0)
+		if tr != nil && tr.Type == 0 {
 
-		errTransport := h.orm.Transport.Query().
-			Where(
-				transport.Active(true),
-			).
-			Unique(true).
-			Select(transport.FieldID, transport.FieldName, transport.FieldMinCount, transport.FieldMaxCount).Scan(ctx.Request().Context(), &trans)
+			var trans []struct {
+				Id        int
+				Name      string
+				Max_count int
+				Min_count int
+			}
+			//_ = trans
+			//transports := make([]components.OrderTransport, len(trans))
 
-		//transports := make([]forms.Transport, len(trans))
+			//
+			errTransport := h.orm.Transport.Query().
+				Where(
+					transport.Active(true),
+				).
+				Unique(true).
+				Select(transport.FieldID, transport.FieldName, transport.FieldMinCount, transport.FieldMaxCount).Scan(ctx.Request().Context(), &trans)
 
-		transports := make([]components.OrderTransport, len(trans))
-		_ = transports
-		if errTransport == nil {
-			for i := range trans {
-				transports[i] = components.OrderTransport{Id: trans[i].Id, Name: trans[i].Name, Min_count: trans[i].Min_count,
-					Max_count: trans[i].Max_count, Cost: 0}
-				filteredCost := ui.Filter(costs, func(cost forms.Cost) bool {
-					return cost.Transport_id == trans[i].Id
-				})
-				if (len(filteredCost)) == 1 {
-					transports[i].Cost = filteredCost[0].Cost
+			//transports := make([]components.OrderTransport, len(trans))
+			//_ = transports
+			if errTransport == nil {
+				for i := range trans {
+					//transports[i] = components.OrderTransport{Id: trans[i].Id, Name: trans[i].Name, Min_count: trans[i].Min_count,
+					//	Max_count: trans[i].Max_count, Cost: 0}
+					transports = append(transports, components.OrderTransport{Id: trans[i].Id, Name: trans[i].Name, Min_count: trans[i].Min_count,
+						Max_count: trans[i].Max_count, Cost: 0})
+					filteredCost := ui.Filter(costs, func(cost forms.Cost) bool {
+						return cost.Transport_id == trans[i].Id
+					})
+					if (len(filteredCost)) == 1 {
+						transports[i].Cost = filteredCost[0].Cost
+					}
 				}
 			}
-		}
-		if errTransport != nil {
-			fmt.Println("ERR_TRANSPORT: " + errTransport.Error())
-			tr = nil
+
+			if errTransport != nil {
+				fmt.Println("ERR_TRANSPORT: " + errTransport.Error())
+				tr = nil
+			}
 		}
 
+		if tr != nil && tr.Type == 1 {
+			transports = append(transports, components.OrderTransport{Id: 0, Name: "Пешая экскурсия", Min_count: 1,
+				Max_count: 10, Cost: 0})
+
+			filteredCost := ui.Filter(gcosts, func(cost *ent.GCost) bool {
+				return cost.TransportID == 0
+			})
+			if (len(filteredCost)) == 1 {
+				transports[0].Cost = filteredCost[0].Cost
+			}
+		}
+
+		//fmt.Println(transports)
 		var gdes []struct {
 			Id int
 		}
@@ -160,8 +177,6 @@ func (h *GOrderORM) Page(ctx echo.Context) error {
 			tr = nil
 		}
 
-		//guideCount, errGuide := h.orm.Guide.Query().Where(guide.Active(true)).Count(ctx.Request().Context())
-
 		// create trip shedule for current date
 		if errTrip != nil {
 			fmt.Println("ERR: " + errTrip.Error())
@@ -171,10 +186,8 @@ func (h *GOrderORM) Page(ctx echo.Context) error {
 			fmt.Println("ERR: " + errGCost.Error())
 			tr = nil
 		}
-		//if errGuide != nil {
-		//	fmt.Println("ERR_GUIDE: " + errGuide.Error())
-		//	tr = nil
-		//}
+
+		//
 
 		if tr != nil {
 			m0 := int(now.Month())
@@ -200,7 +213,6 @@ func (h *GOrderORM) Page(ctx echo.Context) error {
 
 			t := forms.GOrderParam{Trip: *tr, M0: m0, M1: m1, M2: m2, Y0: y0, Y1: y1, Y2: y2, Shedules: shedules,
 				Guides: guides, Transports: transports}
-			//fmt.Println(transports)
 			return pages.GOrderUs(ctx, f, &t)
 		}
 	}
@@ -212,7 +224,6 @@ func (h *GOrderORM) Submit(ctx echo.Context) error {
 	var input forms.GOrderForm
 
 	err := form.Submit(ctx, &input)
-	//fmt.Println("#####////////////////////// ERROR: " + err)
 	//_ = err
 	switch err.(type) {
 	case nil:
@@ -227,6 +238,7 @@ func (h *GOrderORM) Submit(ctx echo.Context) error {
 	//fmt.Println("#####//////////////////////111111 handler input TRANSPORT: " + input.Transport)
 	//fmt.Println("#####//////////////////////111111 handler input TRANSPORT: " + input.Cost)
 	//fmt.Println("#####//////////////////////111111 handler input PLACE: " + input.Place)
+	fmt.Println("#####//////////////////////111111 handler input GUIDEID: " + input.Guide)
 	//fmt.Println("##### SUBMIT") oklch(0.2326 0.014 253.100006
 	return h.Page(ctx)
 }

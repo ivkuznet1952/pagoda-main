@@ -47,6 +47,11 @@ type (
 		Label string
 	}
 
+	InputFieldParamsGuideId struct {
+		Name  string
+		Label string
+	}
+
 	FileFieldParams struct {
 		Name  string
 		Label string
@@ -244,7 +249,8 @@ func MonthChooser(el MonthChooserOptionsParams) Node {
 				Value(opt.Value),
 				Class("radio mr-1 "), //+formFieldStatusClass(el.Form, el.FormField)),
 				If(strconv.Itoa(el.Value) == opt.Value, Checked()),
-				x.On("click", "if (checked_month != "+opt.Value+") {order_day=''; order_begin = ''; begin_list = []; transport_list = [];}"),
+				x.On("click", "if (checked_month != "+opt.Value+") {order_day=''; order_begin = ''; "+
+					"begin_list = []; transport_list = [];}"),
 				x.Model("checked_month"),
 			),
 			Label(
@@ -270,7 +276,15 @@ func setOrderPeriod(h []HourDuration) string {
 	for i := range h {
 		value := addZeroToStr(strconv.Itoa(h[i].H0)) + ":" + addZeroToStr(strconv.Itoa(h[i].M0)) + " - " +
 			addZeroToStr(strconv.Itoa(h[i].H1)) + ":" + addZeroToStr(strconv.Itoa(h[i].M1))
-		s = s + "{id: '" + strconv.Itoa(i) + "', value: '" + value + "', transports: " + setOrderTransport(h[i].OrderTransports) + ", active: false},"
+		if len(h[i].OrderGuides) > 0 {
+			s = s + "{id: '" + strconv.Itoa(i) + "', value: '" + value + "', transports: " +
+				setOrderTransport(h[i].OrderTransports) + ", guideid: " + strconv.Itoa(h[i].OrderGuides[0].Id) +
+				", active: false},"
+		} else {
+			s = s + "{id: '" + strconv.Itoa(i) + "', value: '" + value + "', transports: " +
+				setOrderTransport(h[i].OrderTransports) + ", guideid: 0" +
+				", active: false},"
+		}
 		//for j := range h[i].OrderTransports {
 		//s = s + " transport_list: " + setOrderTransport(h[i].OrderTransports)
 		//}
@@ -355,7 +369,7 @@ func Calendar(el OptionsParamsCalendar) Node {
 		),
 
 		Div(
-			x.Show("order_day != '' && begin_list.length > 0"),
+			//x.Show("order_day != '' && begin_list.length > 0"),
 			Class("menu-title mt-3 uppercase bg-base-200 p-2"),
 			Span(Text("Период проведение экскурсии (начало/окончание)")),
 		),
@@ -368,18 +382,15 @@ func Calendar(el OptionsParamsCalendar) Node {
 					Strong(
 						x.Bind("style", "item.active && { color: 'green'}"),
 						x.Text("item.value"),
-						x.On("click", "order_begin = item.value; transport_list = []; "+
+						x.On("click", "order_transport=''; order_cost = ''; order_place = ''; "+
+							"order_begin = item.value; transport_list = []; "+
 							" for (let i = 0; i < begin_list.length; i++) {"+
 							" begin_list[i].active = false;  "+
 							"}; "+
 							"; setTimeout(() => {"+
 							"item.active=true;"+
-							"transport_list = item.transports"+
-							//" $nextTick(() => { for (let i = 0; i < item.transports.length; i++) { "+
-							//" transport_list.push(item.transports[i]);}  });"+
-							//"for (let i = 0; i < item.transports[index].length; i++) {"+
-							//"transport_list.push(item.transports[index][i]);}"+
-							//"} ,"+
+							"transport_list = item.transports; if (transport_list.length == 1) {transport_list[0].active = true; order_transport =  transport_list[0].Id; order_cost = transport_list[0].Cost}"+
+							" order_cost = transport_list[0].Cost; order_guideid = item.guideid; "+
 							"}, 20);"),
 					),
 				),
@@ -387,28 +398,24 @@ func Calendar(el OptionsParamsCalendar) Node {
 		),
 		//for (let i = 0; i < item.transports[index].length; i++) {transport_list.push(item.transports[i]};
 		Div(
-			//x.Show("order_day != '' && transport_list.length > 0"),
+			//x.Show("order_day != '' order_cost != '' && order_transport != '' && transport_list.length > 0"),
 			Class("menu-title mt-3 uppercase bg-base-200 p-2"),
 			Span(Text("Транспорт")),
-			//x.Text("transport_list.length"),
 		),
 		Div(
 			Class("flex flex-wrap gap-8 ml-8"),
-			//x.Show("order_day != '' && transport_list.length > 0"),
-			//x.Model("transport_list"),
 			Template(
-				//x.For("(item, index) in transport_list"),
 				x.For("item in transport_list"),
-				//x.Model("transport_list"),
 				Div(
 					Strong(
 						x.Bind("style", "item.active && { color: 'green'}"),
 						x.Text("item.Name"),
-						x.On("click", "order_transport = item.id; order_cost = item.cost; "+
+						//x.Text("item.Id"),
+						x.On("click", "if (item.Id == 0) {order_transport = '0'} else {order_transport = item.Id; } ; order_cost = item.Cost; "+
 							" for (let i = 0; i < transport_list.length; i++) {"+
 							" transport_list[i].active = false;  "+
 							"}; "+
-							"; setTimeout(() => {item.active=true;}, 20); "),
+							"; setTimeout(() => {item.active=true; }, 20); "),
 					),
 				),
 			),
@@ -452,7 +459,7 @@ func updateDayColor(el OptionsParamsCalendar, current int, opt ChoiceDate) strin
 
 	el.Value = current
 
-	var s = "transport_list = []; order_day='" + getDay(el.Options[current]) + "'; "
+	var s = "transport_list = []; order_cost = ''; order_place = '';  order_day='" + getDay(el.Options[current]) + "'; "
 	if opt.IsVisible || opt.IsEnabled {
 		if len(opt.HourDurations) == 0 {
 			s = s + "begin_list = []; begin_list[0]='Нет доступного времени экскурсии!'; "
@@ -462,7 +469,8 @@ func updateDayColor(el OptionsParamsCalendar, current int, opt ChoiceDate) strin
 		//}
 		if len(opt.HourDurations) > 0 {
 			a := setOrderPeriod(opt.HourDurations)
-			s = s + "begin_list=" + a + "; "
+			s = s + "begin_list=" + a + "; order_cost = ''; order_place = ''; if (begin_list.length == 1) " +
+				"begin_list[0].active = true;"
 		}
 		//if len(opt.OrderTransports) > 0 {
 		//	a := setOrderTransport(opt.OrderTransports)
@@ -676,6 +684,17 @@ func InputFieldCost(el InputFieldParamsCost) Node {
 	)
 }
 
+func InputFieldGuideId(el InputFieldParamsGuideId) Node {
+	return Fieldset(
+		el.Label,
+		Input(
+			x.Model("order_guideid"),
+			Name(el.Name),
+			Class("hidden"),
+		),
+	)
+}
+
 func Fieldset(label string, els ...Node) Node {
 	return FieldSet(
 		Class("fieldset"),
@@ -745,6 +764,15 @@ func FormButton(color Color, label string) Node {
 	return Button(
 		Class("btn "+buttonColor(color)),
 		//x.Bind("disabled", "tourist_count == 0"),
+		Text(label),
+	)
+}
+
+func FormButtonOrder(color Color, label string) Node {
+	return Button(
+		Class("btn "+buttonColor(color)),
+		x.Bind("disabled", "tourist_count == 0 || order_day == '' || order_begin == '' || "+
+			"order_transport == '' || order_guideid == '' || order_place == ''"),
 		Text(label),
 	)
 }

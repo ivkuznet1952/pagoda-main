@@ -2,6 +2,7 @@ package ui
 
 const GUIDE_TYPE = 0
 const TRANSPORT_TYPE = 1
+const TIME_BETWEEN_TRIP = 1
 
 func MonthName(monthInt int) string {
 	switch monthInt {
