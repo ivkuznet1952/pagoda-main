@@ -457,29 +457,33 @@ func calendarLine(b Group) Node {
 
 func updateDayColor(el OptionsParamsCalendar, current int, opt ChoiceDate) string {
 
+	if !opt.IsVisible || !opt.IsEnabled {
+		return ""
+	}
+
 	el.Value = current
 
 	var s = "transport_list = []; order_cost = ''; order_place = '';  order_day='" + getDay(el.Options[current]) + "'; "
-	if opt.IsVisible || opt.IsEnabled {
-		if len(opt.HourDurations) == 0 {
-			s = s + "begin_list = []; begin_list[0]='Нет доступного времени экскурсии!'; "
-		}
-		//if len(opt.OrderTransports) == 0 {
-		//	s = s + "transport_list = []; transport_list[0]='Нет доступного транспорта!'; "
-		//}
-		if len(opt.HourDurations) > 0 {
-			a := setOrderPeriod(opt.HourDurations)
-			s = s + "begin_list=" + a + "; order_cost = ''; order_place = ''; if (begin_list.length == 1) " +
-				"begin_list[0].active = true;"
-		}
-		//if len(opt.OrderTransports) > 0 {
-		//	a := setOrderTransport(opt.OrderTransports)
-		//	s = s + "transport_list=" + a + "; "
-		//}
+	//if opt.IsVisible || opt.IsEnabled {
+	//if len(opt.HourDurations) == 0 {
+	//	s = s + "begin_list = []; begin_list[0]='Нет доступного времени экскурсии!'; "
+	//}
+	//if len(opt.OrderTransports) == 0 {
+	//	s = s + "transport_list = []; transport_list[0]='Нет доступного транспорта!'; "
+	//}
+	if len(opt.HourDurations) > 0 {
+		a := setOrderPeriod(opt.HourDurations)
+		s = s + "begin_list=" + a + "; order_cost = ''; order_place = ''; if (begin_list.length == 1) " +
+			"begin_list[0].active = true;"
 	}
-	if !opt.IsVisible || !opt.IsEnabled {
-		//s = s + "begin_list=[]; transport_list=[];"
-	}
+	//if len(opt.OrderTransports) > 0 {
+	//	a := setOrderTransport(opt.OrderTransports)
+	//	s = s + "transport_list=" + a + "; "
+	//}
+	//}
+	//if !opt.IsVisible || !opt.IsEnabled {
+	//s = s + "begin_list=[]; transport_list=[];"
+	//}
 
 	l := len(el.Options)
 	ref := "$refs.dayDiv_" + strconv.Itoa(el.Month)
@@ -770,7 +774,7 @@ func FormButton(color Color, label string) Node {
 
 func FormButtonOrder(color Color, label string) Node {
 	return Button(
-		Class("btn "+buttonColor(color)),
+		Class("btn w-full md:w-44 lg:w-44 "+buttonColor(color)),
 		x.Bind("disabled", "tourist_count == 0 || order_day == '' || order_begin == '' || "+
 			"order_transport == '' || order_guideid == '' || order_place == ''"),
 		Text(label),

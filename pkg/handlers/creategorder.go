@@ -73,15 +73,15 @@ func (h *GOrderORM) Page(ctx echo.Context) error {
 		costs := make([]forms.Cost, len(gcosts))
 		if errGCost == nil {
 			for i := range costs {
-				costs[i] = forms.Cost{Transport_id: gcosts[i].TransportID, Cost: gcosts[i].Cost}
+				costs[i] = forms.Cost{TransportId: gcosts[i].TransportID, Cost: gcosts[i].Cost}
 			}
 		}
 
 		var v []struct {
-			Resource_type int
-			Resource_id   int
-			Begin         time.Time
-			End           time.Time
+			ResourceType int
+			ResourceId   int
+			Begin        time.Time
+			End          time.Time
 		}
 
 		errShedule := h.orm.Shedule.Query().
@@ -127,7 +127,7 @@ func (h *GOrderORM) Page(ctx echo.Context) error {
 					transports = append(transports, components.OrderTransport{Id: trans[i].Id, Name: trans[i].Name, Min_count: trans[i].Min_count,
 						Max_count: trans[i].Max_count, Cost: 0})
 					filteredCost := ui.Filter(costs, func(cost forms.Cost) bool {
-						return cost.Transport_id == trans[i].Id
+						return cost.TransportId == trans[i].Id
 					})
 					if (len(filteredCost)) == 1 {
 						transports[i].Cost = filteredCost[0].Cost
