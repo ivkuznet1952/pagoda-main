@@ -53,9 +53,10 @@ func GOrderUs(ctx echo.Context, form *forms.GOrderForm, trip *forms.GOrderParam)
 			return form.Render(r, trip)
 		}),
 		Iff(form.IsDone(), func() Node {
+			//form.Tripid = strconv.Itoa(trip.Trip.ID)
 
-			//fmt.Println(trip)
-			//fmt.Println("#################:" + strconv.Itoa(len(trip.Transports)))
+			//fmt.Println(form.Tripid)
+			//fmt.Println("#################:" + form.Tripid)
 			//transports := ui.Filter(trip.Transports, func(transport forms.Transport) bool {
 			//	id, err := strconv.Atoi(form.Transport)
 			//	fmt.Println("#######: " + form.Transport)

@@ -19,6 +19,7 @@ import (
 
 type (
 	GOrderForm struct {
+		Tripid    string `form:"tripid"`
 		Tourists  string `form:"tourists" validate:"required"`
 		Day       string `form:"day" validate:"required"`
 		Begin     string `form:"begin" validate:"required"`
@@ -30,10 +31,10 @@ type (
 	}
 
 	Shedule struct {
-		ResourceType int
-		ResourceId   int
-		Begin        time.Time
-		End          time.Time
+		Resource_type int
+		Resource_id   int
+		Begin         time.Time
+		End           time.Time
 	}
 
 	Cost struct {
@@ -115,6 +116,8 @@ func (f *GOrderForm) Render(r *ui.Request, trip *GOrderParam) Node {
 	warningArray[4] = "Задайте время и место подачи транспорта!"
 	warningArray[5] = "Задайте удобное время и место встречи гида!"
 
+	f.Tripid = strconv.Itoa(trip.Trip.ID)
+
 	return Form(
 
 		ID("gorder"),
@@ -145,7 +148,8 @@ func (f *GOrderForm) Render(r *ui.Request, trip *GOrderParam) Node {
 		P(),
 		Div(
 			x.Cloak(),
-			x.Data("{ order_guideid: '', order_place: '', order_cost: '', order_transport: '', order_day: '', order_begin: '', begin_list: [], transport_list: [], "+
+			x.Data("{ order_guideid: '', order_place: '', order_cost: '', order_transport: '', order_day: '',"+
+				" order_begin: '', begin_list: [], transport_list: [], "+
 				"tourist_array: [{value:1, active: false }, {value:2, active: false }, {value:3, active: false },"+
 				"{value:4, active: false }, {value:5, active: false }, {value:6, active: false },"+
 				"{value:7, active: false }, {value:8, active: false }, {value:9, active: false }, "+
@@ -233,16 +237,13 @@ func (f *GOrderForm) Render(r *ui.Request, trip *GOrderParam) Node {
 			P(),
 
 			If(trip.Trip.Type == 0, Div(
-				//x.Show("tourist_count > 0 && order_transport != '' && order_begin != ''"),
 				header("Место и время подачи транспорта"),
 			)),
 			If(trip.Trip.Type == 1, Div(
-				//x.Show("tourist_count > 0 && order_transport != '' && order_begin != ''"),
 				header("Место и время встречи гида"),
 			)),
 			Div(
 				x.Show("tourist_count > 0 && order_transport != '' && order_begin != ''"),
-				Class("ml-8"),
 				TextareaFieldPlace(TextareaFieldParamsPlace{
 					Form:      f,
 					FormField: "Place",
@@ -251,56 +252,68 @@ func (f *GOrderForm) Render(r *ui.Request, trip *GOrderParam) Node {
 					Value:     f.Place,
 				}),
 			),
-			Div(
-				InputFieldTourist(
-					InputFieldParamsTourist{
-						Name: "Tourists",
-					}),
-				//Style("background-color: gray;"),
-			),
+			//Div(
+			InputFieldTourist(
+				InputFieldParamsTourist{
+					Name: "Tourists",
+				}),
+			//Style("background-color: gray;"),
+			//),
 			//P(),
-			Div(
-				InputFieldDay(
-					InputFieldParamsDay{
-						Name: "Day",
-					}),
-				//	Style("background-color: green;"),
-			),
+			//Div(
+			InputFieldDay(
+				InputFieldParamsDay{
+					Name: "Day",
+				}),
+			//	Style("background-color: green;"),
+			//),
 			//P(),
-			Div(
-				InputFieldBegin(
-					InputFieldParamsBegin{
-						Name: "Begin",
-					}),
-				//Style("background-color: blue;"),
-			),
+			//Div(
+			InputFieldBegin(
+				InputFieldParamsBegin{
+					Name: "Begin",
+				}),
+			//Style("background-color: blue;"),
+			//),
 			//P(),
-			Div(
-				InputFieldTransport(
-					InputFieldParamsTransport{
-						Name: "Transport",
-					}),
-				//Style("background-color: red;"),
-			),
+			//Div(
+			InputFieldTransport(
+				InputFieldParamsTransport{
+					Name: "Transport",
+				}),
+			//Style("background-color: red;"),
+			//),
 			//P(),
-			Div(
-				InputFieldCost(
-					InputFieldParamsCost{
-						Name: "Cost",
-					}),
-				//Style("background-color: orange;"),
-			),
-			Div(
-				InputFieldGuideId(
-					InputFieldParamsGuideId{
-						Name: "Guide",
-					}),
-				//Style("background-color: orange;"),
-			),
+			///	Div(
+			InputFieldCost(
+				InputFieldParamsCost{
+					Name: "Cost",
+				}),
+			//Style("background-color: orange;"),
+			//	),
+			//Div(
+			InputFieldGuideId(
+				InputFieldParamsGuideId{
+					Name: "Guide",
+				}),
+			//Style("background-color: orange;"),
+			//),
+			//Div(
+			InputFieldTripId(
+				InputFieldParamsTripId{
+					Name:  "Tripid",
+					Value: f.Tripid,
+				}),
+			//Style("background-color: orange;"),
+			//),
 			//Input(
 			//	Class("input"),
 			//	Type("time"),
 			//),
+			//Div(
+			//	Attr("name", "Tripid"),
+			//),
+
 			ControlGroup(
 				//FormButtonOrder(ColorPrimary, "Оформить заказ"),
 				FormButtonOrder(ColorInfo, "Оформить заказ"),
@@ -327,10 +340,6 @@ func initCalendarDays(shedules []Shedule, touristCount int, trip ent.Trip, today
 	if touristCount == 0 {
 		return days
 	}
-	//fmt.Println(month)
-	//now := time.Now()
-	//twoMonthLater := now.AddDate(0, 2, 0)
-	//fmt.Println("Two Month Later:", twoMonthLater.Day())
 
 	for i := 0; i < 42; i++ {
 		//
@@ -355,9 +364,14 @@ func initCalendarDays(shedules []Shedule, touristCount int, trip ent.Trip, today
 		if days[i].IsEnabled && days[i].IsVisible {
 			//
 			for j := range tripDurations {
-				//if month == 3 && (days[i].Day == 10) {
+
 				b := time.Date(year, time.Month(month), days[i].Day, tripDurations[j].begin.Hour(), tripDurations[j].begin.Minute(), 0, 0, time.UTC)
 				e := time.Date(year, time.Month(month), days[i].Day, tripDurations[j].end.Hour(), tripDurations[j].end.Minute(), 0, 0, time.UTC)
+
+				//if days[i].Day == 27 && days[i].Month == 3 {
+				//	fmt.Println(shedules)
+				//	fmt.Println("shedules ###################")
+				//}
 
 				resourcedShedules := ui.Filter(shedules, func(shedule Shedule) bool {
 					return ((shedule.Begin.Before(b) || shedule.Begin.Equal(b)) &&
@@ -367,6 +381,12 @@ func initCalendarDays(shedules []Shedule, touristCount int, trip ent.Trip, today
 							(shedule.End.After(e) || shedule.End.Equal(e)))
 				})
 				_ = resourcedShedules
+				//if days[i].Day == 27 && days[i].Month == 3 {
+				//	fmt.Println(b)
+				//	fmt.Println(e)
+				//fmt.Println(resourcedShedules)
+				//fmt.Println(shedules)
+				//}
 
 				allowTransports := ui.Filter(transports, func(transport OrderTransport) bool {
 					return touristCount >= transport.Min_count && touristCount <= transport.Max_count
@@ -393,14 +413,14 @@ func initCalendarDays(shedules []Shedule, touristCount int, trip ent.Trip, today
 func hasFreeResourceForTransport(shedules []Shedule, transports []OrderTransport) []OrderTransport {
 
 	shedulesTransport := ui.Filter(shedules, func(shedule Shedule) bool {
-		return shedule.ResourceType == ui.TRANSPORT_TYPE
+		return shedule.Resource_type == ui.TRANSPORT_TYPE
 	})
 
 	arr := make([]OrderTransport, 0)
 	for k := range transports {
 		found := false
 		for j := range shedulesTransport {
-			if shedulesTransport[j].ResourceId == transports[k].Id {
+			if shedulesTransport[j].Resource_id == transports[k].Id {
 				found = true
 			}
 		}
@@ -416,14 +436,14 @@ func hasFreeResourceForTransport(shedules []Shedule, transports []OrderTransport
 func hasFreeResourceForGuide(shedules []Shedule, guides []OrderGuide) []OrderGuide {
 
 	shedulesGuide := ui.Filter(shedules, func(shedule Shedule) bool {
-		return shedule.ResourceType == ui.GUIDE_TYPE
+		return shedule.Resource_type == ui.GUIDE_TYPE
 	})
 
 	arr := make([]OrderGuide, 0)
 	for k := range guides {
 		found := false
 		for j := range shedulesGuide {
-			if shedulesGuide[j].ResourceId == guides[k].Id {
+			if shedulesGuide[j].Resource_id == guides[k].Id {
 				found = true
 			}
 		}

@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -78,10 +79,10 @@ func (h *GOrderORM) Page(ctx echo.Context) error {
 		}
 
 		var v []struct {
-			ResourceType int
-			ResourceId   int
-			Begin        time.Time
-			End          time.Time
+			Resource_type int
+			Resource_id   int
+			Begin         time.Time
+			End           time.Time
 		}
 
 		errShedule := h.orm.Shedule.Query().
@@ -97,6 +98,7 @@ func (h *GOrderORM) Page(ctx echo.Context) error {
 				shedules[i] = v[i]
 			}
 		}
+		//fmt.Println(shedules)
 
 		transports := make([]components.OrderTransport, 0)
 		if tr != nil && tr.Type == 0 {
@@ -107,8 +109,6 @@ func (h *GOrderORM) Page(ctx echo.Context) error {
 				Max_count int
 				Min_count int
 			}
-			//_ = trans
-			//transports := make([]components.OrderTransport, len(trans))
 
 			//
 			errTransport := h.orm.Transport.Query().
@@ -118,12 +118,9 @@ func (h *GOrderORM) Page(ctx echo.Context) error {
 				Unique(true).
 				Select(transport.FieldID, transport.FieldName, transport.FieldMinCount, transport.FieldMaxCount).Scan(ctx.Request().Context(), &trans)
 
-			//transports := make([]components.OrderTransport, len(trans))
 			//_ = transports
 			if errTransport == nil {
 				for i := range trans {
-					//transports[i] = components.OrderTransport{Id: trans[i].Id, Name: trans[i].Name, Min_count: trans[i].Min_count,
-					//	Max_count: trans[i].Max_count, Cost: 0}
 					transports = append(transports, components.OrderTransport{Id: trans[i].Id, Name: trans[i].Name, Min_count: trans[i].Min_count,
 						Max_count: trans[i].Max_count, Cost: 0})
 					filteredCost := ui.Filter(costs, func(cost forms.Cost) bool {
@@ -213,10 +210,35 @@ func (h *GOrderORM) Page(ctx echo.Context) error {
 
 			t := forms.GOrderParam{Trip: *tr, M0: m0, M1: m1, M2: m2, Y0: y0, Y1: y1, Y2: y2, Shedules: shedules,
 				Guides: guides, Transports: transports}
+
+			//ctx.Set("tripId", strconv.Itoa(tr.ID))
+
 			return pages.GOrderUs(ctx, f, &t)
 		}
 	}
+	//f.Tripid = strconv.Itoa(tid)
+
 	return pages.GOrderUs(ctx, f, nil)
+}
+
+//func GetUserByID(ctx echo.Context, client *ent.Client, userID int) (*ent.User, error) {
+// The Get method is available on the specific entity client
+//user, err := client.User.Get(ctx.Request().Context(), userID)
+//if err != nil {
+//	Handle error (e.g., ent.IsNotFound(err) can check if the user wasn't found)
+//return nil, fmt.Errorf("failed to get user: %w", err)
+//}
+//return user, nil
+//}
+
+func GetOrderNumberByID(ctx echo.Context, client *ent.Client, orderNumberID int) (*ent.OrderNumber, error) {
+	// The Get method is available on the specific entity client
+	orderNumber, err := client.OrderNumber.Get(ctx.Request().Context(), orderNumberID)
+	if err != nil {
+		// Handle error (e.g., ent.IsNotFound(err) can check if the user wasn't found)
+		return nil, fmt.Errorf("failed to get orderNumber: %w", err)
+	}
+	return orderNumber, nil
 }
 
 func (h *GOrderORM) Submit(ctx echo.Context) error {
@@ -224,7 +246,8 @@ func (h *GOrderORM) Submit(ctx echo.Context) error {
 	var input forms.GOrderForm
 
 	err := form.Submit(ctx, &input)
-	//_ = err
+	_ = err
+
 	switch err.(type) {
 	case nil:
 	case validator.ValidationErrors:
@@ -233,12 +256,77 @@ func (h *GOrderORM) Submit(ctx echo.Context) error {
 		return err
 	}
 
-	//fmt.Println("#####//////////////////////111111 handler input DATE: " + input.Day)
-	//fmt.Println("#####//////////////////////111111 handler input HOUR: " + input.Begin)
-	//fmt.Println("#####//////////////////////111111 handler input TRANSPORT: " + input.Transport)
-	//fmt.Println("#####//////////////////////111111 handler input TRANSPORT: " + input.Cost)
-	//fmt.Println("#####//////////////////////111111 handler input PLACE: " + input.Place)
-	fmt.Println("#####//////////////////////111111 handler input GUIDEID: " + input.Guide)
-	//fmt.Println("##### SUBMIT") oklch(0.2326 0.014 253.100006
+	orderNumber, err := GetOrderNumberByID(ctx, h.orm, 1)
+	if err != nil {
+		fmt.Println("########; " + err.Error())
+		return h.Page(ctx)
+	}
+	_ = orderNumber
+
+	day, err := time.Parse("2006-01-02", input.Day)
+	_ = day
+	fmt.Println(day)
+
+	before, _, _ := strings.Cut(input.Begin, " - ")
+
+	begin, err := time.Parse("15:04", before)
+	_ = begin
+	// parse begin
+	tripId, errTripId := strconv.Atoi(input.Tripid)
+	if errTripId != nil {
+		return h.Page(ctx)
+	}
+	_ = tripId
+	touristCount, errTouristCount := strconv.Atoi(input.Tourists)
+	if errTouristCount != nil {
+		return h.Page(ctx)
+	}
+	_ = touristCount
+	transportId, errTransportId := strconv.Atoi(input.Transport)
+	if errTransportId != nil {
+		return h.Page(ctx)
+	}
+	_ = transportId
+	guideId, errGuideId := strconv.Atoi(input.Guide)
+	if errGuideId != nil {
+		return h.Page(ctx)
+	}
+	_ = guideId
+	cost, errCost := strconv.Atoi(input.Cost)
+	if errCost != nil {
+		return h.Page(ctx)
+	}
+	_ = cost
+
+	order, errOrder := h.orm.GOrder.Create().
+		SetNum(orderNumber.Num).
+		SetTripID(tripId).
+		SetTouristCount(touristCount).
+		SetDay(day).
+		SetBegin(begin).
+		SetTransportID(transportId).
+		SetGuideID(guideId).
+		SetCost(cost).
+		SetStatus(0).
+		SetPayStatus(0).
+		SetPaidSum(0).
+		SetCustomerID(1). // TODO USER.ID
+		SetPlace(input.Place).
+		SetComment("").
+		SetCreated(time.Now()).
+		SetUpdated(time.Now()).
+		SetCreatedBy(1). // TODO USER.ID
+		SetArchived(false).
+		Save(ctx.Request().Context())
+	_ = order
+	if errOrder != nil {
+		fmt.Println("######## ERROR ORDER; " + errOrder.Error())
+		return h.Page(ctx)
+	}
+	errUpdateOrderNumber := h.orm.OrderNumber.UpdateOneID(1).SetNum(orderNumber.Num + 1).Exec(ctx.Request().Context())
+	if errUpdateOrderNumber != nil {
+		fmt.Println("######## ERROR UPDATE ORDER NUMBER " + errUpdateOrderNumber.Error())
+	}
+
 	return h.Page(ctx)
 }

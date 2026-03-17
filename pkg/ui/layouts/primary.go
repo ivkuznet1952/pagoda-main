@@ -43,7 +43,7 @@ func Primary(r *ui.Request, content Node) Node {
 						//Label(
 						//	For("sidebar"),
 						//	Class("btn btn-primary drawer-button lg:hidden"),
-						//	Text("Open drawer1"),
+						//	Text("Open drawer"),
 						//),
 					),
 					sidebarMenu(r),

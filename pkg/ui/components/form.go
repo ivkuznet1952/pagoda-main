@@ -52,6 +52,12 @@ type (
 		Label string
 	}
 
+	InputFieldParamsTripId struct {
+		Name string
+		//Label string
+		Value string
+	}
+
 	FileFieldParams struct {
 		Name  string
 		Label string
@@ -435,8 +441,7 @@ func addZeroToStr(s string) string {
 // set day as string
 func getDay(opt ChoiceDate) string {
 	if opt.IsEnabled && opt.IsVisible {
-		return strconv.Itoa(opt.Day) + "." + addZeroToStr(strconv.Itoa(opt.Month)) + "." +
-			addZeroToStr(strconv.Itoa(opt.Year))
+		return addZeroToStr(strconv.Itoa(opt.Year)) + "-" + addZeroToStr(strconv.Itoa(opt.Month)) + "-" + strconv.Itoa(opt.Day)
 	}
 	return ""
 }
@@ -464,35 +469,15 @@ func updateDayColor(el OptionsParamsCalendar, current int, opt ChoiceDate) strin
 	el.Value = current
 
 	var s = "transport_list = []; order_cost = ''; order_place = '';  order_day='" + getDay(el.Options[current]) + "'; "
-	//if opt.IsVisible || opt.IsEnabled {
-	//if len(opt.HourDurations) == 0 {
-	//	s = s + "begin_list = []; begin_list[0]='Нет доступного времени экскурсии!'; "
-	//}
-	//if len(opt.OrderTransports) == 0 {
-	//	s = s + "transport_list = []; transport_list[0]='Нет доступного транспорта!'; "
-	//}
+
 	if len(opt.HourDurations) > 0 {
 		a := setOrderPeriod(opt.HourDurations)
 		s = s + "begin_list=" + a + "; order_cost = ''; order_place = ''; if (begin_list.length == 1) " +
 			"begin_list[0].active = true;"
 	}
-	//if len(opt.OrderTransports) > 0 {
-	//	a := setOrderTransport(opt.OrderTransports)
-	//	s = s + "transport_list=" + a + "; "
-	//}
-	//}
-	//if !opt.IsVisible || !opt.IsEnabled {
-	//s = s + "begin_list=[]; transport_list=[];"
-	//}
 
 	l := len(el.Options)
 	ref := "$refs.dayDiv_" + strconv.Itoa(el.Month)
-	// why ?
-	//for i := 0; i < l; i++ {
-	//	if i == current && !el.Options[i].IsVisible {
-	//		return ref + "_" + strconv.Itoa(i) + ".style.color = 'transparent';"
-	//	}
-	//}
 
 	if !el.Options[current].IsVisible {
 		return ref + "_" + strconv.Itoa(current) + ".style.color = 'transparent';"
@@ -541,28 +526,6 @@ func FieldsetCalendar(label string, els ...Node) Node {
 }
 
 /*
-func formFieldErrorsCalendar(fm form.Form, field string) Node {
-	if fm == nil {
-		return nil
-	}
-
-	errs := fm.GetFieldErrors(field)
-	if len(errs) == 0 {
-		return nil
-	}
-
-	g := make(Group, len(errs))
-	for i, err := range errs {
-		g[i] = Div(
-			Class("text-error"),
-			Text(err),
-		)
-	}
-
-	return g
-}
-*/
-/*
 func formFieldStatusClassCalendar(fm form.Form, formField string) string {
 
 	switch {
@@ -594,7 +557,6 @@ func SelectList(el OptionsParams) Node {
 			Name(el.Name),
 			buttons,
 		),
-		//Help(el.Help),
 		formFieldErrors(el.Form, el.FormField),
 	)
 }
@@ -696,6 +658,14 @@ func InputFieldGuideId(el InputFieldParamsGuideId) Node {
 			Name(el.Name),
 			Class("hidden"),
 		),
+	)
+}
+
+func InputFieldTripId(el InputFieldParamsTripId) Node {
+	return Input(
+		Name(el.Name),
+		Value(el.Value),
+		Class("hidden"),
 	)
 }
 
