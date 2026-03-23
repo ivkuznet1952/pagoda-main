@@ -298,24 +298,15 @@ func (f *GOrderForm) Render(r *ui.Request, trip *GOrderParam) Node {
 				}),
 			//Style("background-color: orange;"),
 			//),
-			//Div(
+
 			InputFieldTripId(
 				InputFieldParamsTripId{
 					Name:  "Tripid",
 					Value: f.Tripid,
 				}),
 			//Style("background-color: orange;"),
-			//),
-			//Input(
-			//	Class("input"),
-			//	Type("time"),
-			//),
-			//Div(
-			//	Attr("name", "Tripid"),
-			//),
 
 			ControlGroup(
-				//FormButtonOrder(ColorPrimary, "Оформить заказ"),
 				FormButtonOrder(ColorInfo, "Оформить заказ"),
 			),
 		),

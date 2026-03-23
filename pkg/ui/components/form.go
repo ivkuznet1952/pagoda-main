@@ -2,6 +2,7 @@ package components
 
 import (
 	"strconv"
+	"time"
 
 	x "github.com/glsubri/gomponents-alpine"
 	"github.com/mikestefanello/pagoda/pkg/form"
@@ -38,6 +39,11 @@ type (
 	}
 
 	InputFieldParamsTransport struct {
+		Name  string
+		Label string
+	}
+
+	InputFieldParamsTest struct {
 		Name  string
 		Label string
 	}
@@ -93,6 +99,12 @@ type (
 		Options []ChoiceDate
 	}
 
+	OptionsParamsShedule struct {
+		Label   string
+		Value   int
+		Options []ChoiceDateShedule
+	}
+
 	Choice struct {
 		Value string
 		Label string
@@ -136,6 +148,12 @@ type (
 		IsWeekend       bool
 		HourDurations   []HourDuration
 		OrderTransports []OrderTransport
+	}
+
+	ChoiceDateShedule struct {
+		Begin time.Time
+		End   time.Time
+		Value string
 	}
 
 	TextareaFieldParams struct {
@@ -311,6 +329,50 @@ func setOrderTransport(h []OrderTransport) string {
 	s = s[0:len(s)-1] + "]"
 	//fmt.Println(s)
 	return s
+}
+
+//func onchange(i int) string {
+//	return "console.log('########### VALUE CHANGED: order[" + strconv.Itoa(i) + "]')"
+
+//return "order[" + strconv.Itoa(i) + "] ="
+//}
+
+func TestSheduleRow(el OptionsParamsShedule) Node {
+
+	fields := make(Group, len(el.Options))
+	//x.Ref("testshedule")
+	//x.Id("0")
+
+	for i, opt := range el.Options {
+		_ = opt
+		fields[i] = Div(
+			Input(
+				Class("w-44 ml-1"),
+				//Strong(Text(opt.Value)),
+
+				x.Model("shedule_row["+strconv.Itoa(i)+"].v"),
+				Style("background-color: green;"),
+				//x.On("change", "value = {value: value}"),
+			),
+			P(),
+			P(),
+		)
+	}
+
+	return FieldsetCalendar(
+		el.Label,
+
+		Div(
+			fields,
+		),
+
+		Div(
+		//x.Show("order_day != '' && begin_list.length > 0"),
+		//Class("menu-title mt-3 uppercase bg-base-200 p-2"),
+		//Span(Text("Период проведение экскурсии (начало/окончание)")),
+		),
+	)
+
 }
 
 func Calendar(el OptionsParamsCalendar) Node {
@@ -635,6 +697,17 @@ func InputFieldTransport(el InputFieldParamsTransport) Node {
 			x.Model("order_transport"),
 			Name(el.Name),
 			Class("hidden"),
+		),
+	)
+}
+
+func InputFieldTest(el InputFieldParamsTest) Node {
+	return Fieldset(
+		el.Label,
+		Input(
+			x.Bind("value", "JSON.stringify(shedule_row)"),
+			Name(el.Name),
+			//Class("hidden"),
 		),
 	)
 }

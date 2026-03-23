@@ -3,7 +3,6 @@ package handlers
 import (
 	"fmt"
 
-	"github.com/go-playground/validator/v10"
 	"github.com/labstack/echo/v4"
 	"github.com/mikestefanello/pagoda/pkg/form"
 	"github.com/mikestefanello/pagoda/pkg/routenames"
@@ -23,9 +22,6 @@ func init() {
 
 func (h *Contact) Init(c *services.Container) error {
 	h.mail = c.Mail
-	//var input forms.Contact
-	//input.Message = "1111111"
-	//fmt.Println("///////// handler Init 25")
 	return nil
 }
 
@@ -52,25 +48,28 @@ func (h *Contact) Submit(ctx echo.Context) error {
 	//input.Message = input.Message + "22222"
 	//fmt.Println("/////////000000 handler Submit 51:" + input.Message)
 	err := form.Submit(ctx, &input)
-	//fmt.Println("///////// 1111111 handler Submit 51:" + input.Message)
-	switch err.(type) {
-	case nil:
-	case validator.ValidationErrors:
-		return h.Page(ctx)
-	default:
-		return err
-	}
+	_ = err
+	fmt.Println("///////// CONTACT MESSAGE handler Submit 52: " + input.Message)
+	fmt.Println("///////// CONTACT EMAIL Submit 53: " + input.Email)
+	fmt.Println("///////// CONTACT TEST Submit 53: " + input.Test)
+	//switch err.(type) {
+	//case nil:
+	//case validator.ValidationErrors:
+	//	return h.Page(ctx)
+	//default:
+	//	return err
+	//}
 	//fmt.Println("/////////22222 handler Submit 51:" + input.Message)
-	err = h.mail.
-		Compose().
-		To(input.Email).
-		Subject("Contact form submitted").
-		Body(fmt.Sprintf("The message is: %s", input.Message)).
-		Send(ctx)
+	//err = h.mail.
+	//	Compose().
+	//	To(input.Email).
+	//	Subject("Contact form submitted").
+	//	Body(fmt.Sprintf("The message is: %s", input.Message)).
+	//	Send(ctx)
 	//
-	if err != nil {
-		return fail(err, "unable to send email")
-	}
+	//if err != nil {
+	//	return fail(err, "unable to send email")
+	//}
 
 	return h.Page(ctx)
 }
