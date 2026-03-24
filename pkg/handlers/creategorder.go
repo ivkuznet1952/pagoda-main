@@ -40,7 +40,8 @@ func (h *GOrderORM) Init(c *services.Container) error {
 
 func (h *GOrderORM) Routes(g *echo.Group) {
 
-	g.POST("/about", h.Submit).Name = routenames.GOrderSubmit
+	//g.POST("/about", h.Submit).Name = routenames.GOrderSubmit
+	g.POST("/createorder", h.Submit).Name = routenames.GOrderSubmit
 	g.GET("/creategorder/:trip_id", h.Page).Name = routenames.CreateGOrder
 }
 
@@ -50,18 +51,7 @@ func (h *GOrderORM) Page(ctx echo.Context) error {
 	var f = form.Get[forms.GOrderForm](ctx)
 
 	tripId := ctx.Param("trip_id")
-	//fmt.Println("############f tripId: " + tripId)
 	tid, _ := strconv.Atoi(tripId)
-
-	//fmt.Println("############f : " + strconv.Itoa(tid))
-
-	//begin1 := time.Date(2026, 2, 27, 10, 15, 0, 0, time.UTC)
-	//end1 := time.Date(2026, 2, 27, 10, 40, 0, 0, time.UTC)
-	//h.orm.Shedule.UpdateOneID(7).SetBegin(begin1).SetEnd(end1).Exec(ctx.Request().Context())
-	//
-	//begin2 := time.Date(2026, 2, 19, 9, 35, 0, 0, time.UTC)
-	//end2 := time.Date(2026, 2, 19, 9, 45, 0, 0, time.UTC)
-	//h.orm.Shedule.UpdateOneID(5).SetBegin(begin2).SetEnd(end2).Exec(ctx.Request().Context())
 
 	if tid > 0 {
 
@@ -79,6 +69,7 @@ func (h *GOrderORM) Page(ctx echo.Context) error {
 		}
 
 		var v []struct {
+			Id            int
 			Resource_type int
 			Resource_id   int
 			Begin         time.Time
@@ -90,7 +81,8 @@ func (h *GOrderORM) Page(ctx echo.Context) error {
 				shedule.BeginGT(now),
 			).
 			Unique(true).
-			Select(shedule.FieldResourceType, shedule.FieldResourceID, shedule.FieldBegin, shedule.FieldEnd).Scan(ctx.Request().Context(), &v)
+			Select(shedule.FieldID, shedule.FieldResourceType, shedule.FieldResourceID, shedule.FieldBegin,
+				shedule.FieldEnd).Scan(ctx.Request().Context(), &v)
 
 		shedules := make([]forms.Shedule, len(v))
 		if errShedule == nil {
@@ -98,7 +90,6 @@ func (h *GOrderORM) Page(ctx echo.Context) error {
 				shedules[i] = v[i]
 			}
 		}
-		//fmt.Println(shedules)
 
 		transports := make([]components.OrderTransport, 0)
 		if tr != nil && tr.Type == 0 {
@@ -118,7 +109,6 @@ func (h *GOrderORM) Page(ctx echo.Context) error {
 				Unique(true).
 				Select(transport.FieldID, transport.FieldName, transport.FieldMinCount, transport.FieldMaxCount).Scan(ctx.Request().Context(), &trans)
 
-			//_ = transports
 			if errTransport == nil {
 				for i := range trans {
 					transports = append(transports, components.OrderTransport{Id: trans[i].Id, Name: trans[i].Name, Min_count: trans[i].Min_count,
@@ -150,7 +140,6 @@ func (h *GOrderORM) Page(ctx echo.Context) error {
 			}
 		}
 
-		//fmt.Println(transports)
 		var gdes []struct {
 			Id int
 		}
@@ -211,25 +200,12 @@ func (h *GOrderORM) Page(ctx echo.Context) error {
 			t := forms.GOrderParam{Trip: *tr, M0: m0, M1: m1, M2: m2, Y0: y0, Y1: y1, Y2: y2, Shedules: shedules,
 				Guides: guides, Transports: transports}
 
-			//ctx.Set("tripId", strconv.Itoa(tr.ID))
-
 			return pages.GOrderUs(ctx, f, &t)
 		}
 	}
-	//f.Tripid = strconv.Itoa(tid)
 
 	return pages.GOrderUs(ctx, f, nil)
 }
-
-//func GetUserByID(ctx echo.Context, client *ent.Client, userID int) (*ent.User, error) {
-// The Get method is available on the specific entity client
-//user, err := client.User.Get(ctx.Request().Context(), userID)
-//if err != nil {
-//	Handle error (e.g., ent.IsNotFound(err) can check if the user wasn't found)
-//return nil, fmt.Errorf("failed to get user: %w", err)
-//}
-//return user, nil
-//}
 
 func GetOrderNumberByID(ctx echo.Context, client *ent.Client, orderNumberID int) (*ent.OrderNumber, error) {
 	// The Get method is available on the specific entity client
@@ -258,14 +234,17 @@ func (h *GOrderORM) Submit(ctx echo.Context) error {
 
 	orderNumber, err := GetOrderNumberByID(ctx, h.orm, 1)
 	if err != nil {
-		fmt.Println("########; " + err.Error())
+		fmt.Println("########ORDERNUMBER ERROR: " + err.Error())
 		return h.Page(ctx)
 	}
 	_ = orderNumber
 
+	//fmt.Println("########ORDERNUMBER: " + strconv.Itoa(orderNumber.Num))
+
 	day, err := time.Parse("2006-01-02", input.Day)
 	_ = day
-	fmt.Println(day)
+
+	//fmt.Println(day)
 
 	before, _, _ := strings.Cut(input.Begin, " - ")
 

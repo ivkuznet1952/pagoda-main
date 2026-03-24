@@ -5,12 +5,15 @@ import (
 )
 
 const (
-	Home                 = "home"
-	About                = "about"
-	Contact              = "contact"
+	Home    = "home"
+	About   = "about"
+	Contact = "contact"
+	//Shedule              = "contact"
 	CreateGOrder         = "creategorder"
+	Shedule              = "shedule"
 	ContactSubmit        = "contact.submit"
 	GOrderSubmit         = "gorder.submit"
+	SheduleSubmit        = "shedule.submit"
 	Login                = "login"
 	LoginSubmit          = "login.submit"
 	Register             = "register"

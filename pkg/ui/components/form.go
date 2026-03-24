@@ -99,6 +99,15 @@ type (
 		Options []ChoiceDate
 	}
 
+	OptionsParamsSheduleCalendar struct {
+		//Form    form.Form
+		Label   string
+		Year    int
+		Month   int
+		Value   int
+		Options []SheduleDate
+	}
+
 	OptionsParamsShedule struct {
 		Label   string
 		Value   int
@@ -134,8 +143,18 @@ type (
 		Min_count int
 	}
 
+	SheduleTransport struct {
+		Id   int
+		Name string
+	}
+
 	OrderGuide struct {
 		Id int
+	}
+	SheduleGuide struct {
+		Id        int
+		FirstName string
+		LastName  string
 	}
 
 	ChoiceDate struct {
@@ -148,6 +167,24 @@ type (
 		IsWeekend       bool
 		HourDurations   []HourDuration
 		OrderTransports []OrderTransport
+	}
+
+	SheduleDate struct {
+		Year      int
+		Month     int
+		Day       int
+		Label     int
+		IsVisible bool
+		IsWeekend bool
+		Shedules  []SheduleValue
+	}
+
+	SheduleValue struct {
+		Id            int
+		Resource_type int
+		Resource_id   int
+		Begin         time.Time
+		End           time.Time
 	}
 
 	ChoiceDateShedule struct {
@@ -435,59 +472,58 @@ func Calendar(el OptionsParamsCalendar) Node {
 		Div(
 			calendarLine(buttons),
 		),
-
-		Div(
-			//x.Show("order_day != '' && begin_list.length > 0"),
-			Class("menu-title mt-3 uppercase bg-base-200 p-2"),
-			Span(Text("Период проведение экскурсии (начало/окончание)")),
-		),
-		Div(
-			Class("flex flex-wrap gap-8 ml-8"),
-			x.Show("order_day != ''"),
-			Template(
-				x.For("(item, index) in begin_list"),
-				Div(
-					Strong(
-						x.Bind("style", "item.active && { color: 'green'}"),
-						x.Text("item.value"),
-						x.On("click", "order_transport=''; order_cost = ''; order_place = ''; "+
-							"order_begin = item.value; transport_list = []; "+
-							" for (let i = 0; i < begin_list.length; i++) {"+
-							" begin_list[i].active = false;  "+
-							"}; "+
-							"; setTimeout(() => {"+
-							"item.active=true;"+
-							"transport_list = item.transports; if (transport_list.length == 1) {transport_list[0].active = true; order_transport =  transport_list[0].Id; order_cost = transport_list[0].Cost}"+
-							" order_cost = transport_list[0].Cost; order_guideid = item.guideid; "+
-							"}, 20);"),
+		/*
+			Div(
+				//x.Show("order_day != '' && begin_list.length > 0"),
+				Class("menu-title mt-3 uppercase bg-base-200 p-2"),
+				Span(Text("Период проведение экскурсии (начало/окончание)")),
+			),
+			Div(
+				Class("flex flex-wrap gap-8 ml-8"),
+				x.Show("order_day != ''"),
+				Template(
+					x.For("(item, index) in begin_list"),
+					Div(
+						Strong(
+							x.Bind("style", "item.active && { color: 'green'}"),
+							x.Text("item.value"),
+							x.On("click", "order_transport=''; order_cost = ''; order_place = ''; "+
+								"order_begin = item.value; transport_list = []; "+
+								" for (let i = 0; i < begin_list.length; i++) {"+
+								" begin_list[i].active = false;  "+
+								"}; "+
+								"; setTimeout(() => {"+
+								"item.active=true;"+
+								"transport_list = item.transports; if (transport_list.length == 1) {transport_list[0].active = true; order_transport =  transport_list[0].Id; order_cost = transport_list[0].Cost}"+
+								" order_cost = transport_list[0].Cost; order_guideid = item.guideid; "+
+								"}, 20);"),
+						),
 					),
 				),
 			),
-		),
-		//for (let i = 0; i < item.transports[index].length; i++) {transport_list.push(item.transports[i]};
-		Div(
-			//x.Show("order_day != '' order_cost != '' && order_transport != '' && transport_list.length > 0"),
-			Class("menu-title mt-3 uppercase bg-base-200 p-2"),
-			Span(Text("Транспорт")),
-		),
-		Div(
-			Class("flex flex-wrap gap-8 ml-8"),
-			Template(
-				x.For("item in transport_list"),
-				Div(
-					Strong(
-						x.Bind("style", "item.active && { color: 'green'}"),
-						x.Text("item.Name"),
-						//x.Text("item.Id"),
-						x.On("click", "if (item.Id == 0) {order_transport = '0'} else {order_transport = item.Id; } ; order_cost = item.Cost; "+
-							" for (let i = 0; i < transport_list.length; i++) {"+
-							" transport_list[i].active = false;  "+
-							"}; "+
-							"; setTimeout(() => {item.active=true; }, 20); "),
+			//
+			Div(
+				Class("menu-title mt-3 uppercase bg-base-200 p-2"),
+				Span(Text("Транспорт")),
+			),
+			Div(
+				Class("flex flex-wrap gap-8 ml-8"),
+				Template(
+					x.For("item in transport_list"),
+					Div(
+						Strong(
+							x.Bind("style", "item.active && { color: 'green'}"),
+							x.Text("item.Name"),
+							//x.Text("item.Id"),
+							x.On("click", "if (item.Id == 0) {order_transport = '0'} else {order_transport = item.Id; } ; order_cost = item.Cost; "+
+								" for (let i = 0; i < transport_list.length; i++) {"+
+								" transport_list[i].active = false;  "+
+								"}; "+
+								"; setTimeout(() => {item.active=true; }, 20); "),
+						),
 					),
 				),
-			),
-		),
+			), */
 	)
 
 }
@@ -503,6 +539,13 @@ func addZeroToStr(s string) string {
 // set day as string
 func getDay(opt ChoiceDate) string {
 	if opt.IsEnabled && opt.IsVisible {
+		return addZeroToStr(strconv.Itoa(opt.Year)) + "-" + addZeroToStr(strconv.Itoa(opt.Month)) + "-" + strconv.Itoa(opt.Day)
+	}
+	return ""
+}
+
+func getDayShedule(opt SheduleDate) string {
+	if opt.IsVisible {
 		return addZeroToStr(strconv.Itoa(opt.Year)) + "-" + addZeroToStr(strconv.Itoa(opt.Month)) + "-" + strconv.Itoa(opt.Day)
 	}
 	return ""
@@ -587,6 +630,164 @@ func FieldsetCalendar(label string, els ...Node) Node {
 	)
 }
 
+func SheduleCalendar(el OptionsParamsSheduleCalendar) Node {
+
+	buttons := make(Group, len(el.Options))
+
+	for i, opt := range el.Options {
+
+		buttons[i] = Div(
+			x.Ref("dayDiv_"+strconv.Itoa(el.Month)+"_"+strconv.Itoa(opt.Label)),
+			x.On("click", updateSheduleDayColor(el, i, opt)),
+			Class("flex flex-row ml-4"),
+			Div(
+				Raw("&#x25A0;"),
+			),
+			Span(
+				Class("w-4 ml-1"),
+				Strong(Text(strconv.Itoa(opt.Day))),
+			),
+			If(!opt.IsVisible, Style("color: transparent")),
+			If(opt.IsVisible && opt.IsWeekend, Style("color: red")),
+			//If(opt.IsVisible, Style("color: gray")),
+		)
+
+	}
+
+	return FieldsetCalendar(
+		el.Label,
+		Div(
+			Class("flex flex-row ml-4"),
+			Span(
+				Class("w-[47px]"),
+				Strong(Text("пн")),
+			),
+			Span(
+				Class("w-[47px]"),
+				Strong(Text("вт")),
+			),
+			Span(
+				Class("w-[47px]"),
+				Strong(Text("ср")),
+			),
+			Span(
+				Class("w-[47px]"),
+				Strong(Text("чт")),
+			),
+			Span(
+				Class("w-[47px]"),
+				Strong(Text("пт")),
+			),
+			Span(
+				Class("w-[47px] text-red-600"),
+				Strong(Text("сб")),
+			),
+			Span(
+				Class("w-[47px] text-red-600"),
+				Strong(Text("вс")),
+			),
+		),
+		Div(
+			calendarLine(buttons),
+		),
+
+		//Div(
+		//	Class("flex flex-wrap gap-8 ml-8"),
+		//	x.Show("order_day != ''"),
+		//	Template(
+		//		x.For("(item, index) in begin_list"),
+		//		Div(
+		//			Strong(
+		//				x.Bind("style", "item.active && { color: 'green'}"),
+		//				x.Text("item.value"),
+		//				x.On("click", "order_transport=''; order_cost = ''; order_place = ''; "+
+		//					"order_begin = item.value; transport_list = []; "+
+		//					" for (let i = 0; i < begin_list.length; i++) {"+
+		//					" begin_list[i].active = false;  "+
+		//					"}; "+
+		//					"; setTimeout(() => {"+
+		//					"item.active=true;"+
+		//					"transport_list = item.transports; if (transport_list.length == 1) {transport_list[0].active = true; order_transport =  transport_list[0].Id; order_cost = transport_list[0].Cost}"+
+		//					" order_cost = transport_list[0].Cost; order_guideid = item.guideid; "+
+		//					"}, 20);"),
+		//			),
+		//		),
+		//	),
+		//),
+
+		//Div(
+		//	Class("flex flex-wrap gap-8 ml-8"),
+		//	Template(
+		//		x.For("item in transport_list"),
+		//		Div(
+		//			Strong(
+		//				x.Bind("style", "item.active && { color: 'green'}"),
+		//				x.Text("item.Name"),
+		//				x.Text("item.Id"),
+		//				x.On("click", "if (item.Id == 0) {order_transport = '0'} else {order_transport = item.Id; } ; order_cost = item.Cost; "+
+		//					" for (let i = 0; i < transport_list.length; i++) {"+
+		//					" transport_list[i].active = false;  "+
+		//					"}; "+
+		//					"; setTimeout(() => {item.active=true; }, 20); "),
+		//			),
+		//		),
+		//	),
+		//),
+	)
+
+}
+
+func updateSheduleDayColor(el OptionsParamsSheduleCalendar, current int, opt SheduleDate) string {
+
+	if !opt.IsVisible {
+		return ""
+	}
+
+	el.Value = current
+	s := ""
+	arr := ""
+	for j := range opt.Shedules {
+		arr = arr + "{v:'" + strconv.Itoa(opt.Shedules[j].Id) + "'}, "
+	}
+	s = " shedule_row = [" + arr + "];"
+
+	l := len(el.Options)
+	ref := "$refs.dayDiv_" + strconv.Itoa(el.Month)
+
+	if !el.Options[current].IsVisible {
+		return ref + "_" + strconv.Itoa(current) + ".style.color = 'transparent';"
+	}
+
+	for i := 0; i < l; i++ {
+
+		if el.Options[i].IsVisible {
+			if i == current {
+				//if el.Options[i].IsEnabled {
+				s = s + ref + "_" + strconv.Itoa(i) + ".style.color = 'green';"
+				//}
+				//if !el.Options[i].IsEnabled {
+				//	s = s + ref + "_" + strconv.Itoa(i) + ".style.color = 'gray';"
+				//}
+			}
+			if i != current {
+				if !el.Options[i].IsWeekend {
+					s = s + ref + "_" + strconv.Itoa(i) + ".style.color = 'white';"
+				}
+				if el.Options[i].IsWeekend {
+					s = s + ref + "_" + strconv.Itoa(i) + ".style.color = 'red';"
+				}
+				//if !el.Options[i].IsEnabled {
+				//	s = s + ref + "_" + strconv.Itoa(i) + ".style.color = 'gray';"
+				//}
+			}
+		}
+		if !el.Options[i].IsVisible {
+			s = s + ref + "_" + strconv.Itoa(i) + ".style.color = 'transparent';"
+		}
+	}
+	return s
+}
+
 /*
 func formFieldStatusClassCalendar(fm form.Form, formField string) string {
 
@@ -650,6 +851,7 @@ func InputField(el InputFieldParams) Node {
 			//Class("input "+formFieldStatusClass(el.Form, el.FormField)),
 			Class("input"),
 			Value(el.Value),
+			//x.Bind("value", "checked_month"),
 			If(el.Placeholder != "", Placeholder(el.Placeholder)),
 		),
 		//Help(el.Help),
@@ -820,6 +1022,15 @@ func FormButtonOrder(color Color, label string) Node {
 		Class("btn w-full md:w-44 lg:w-44 "+buttonColor(color)),
 		x.Bind("disabled", "tourist_count == 0 || order_day == '' || order_begin == '' || "+
 			"order_transport == '' || order_guideid == '' || order_place == ''"),
+		Text(label),
+	)
+}
+
+func FormButtonShedule(color Color, label string) Node {
+	return Button(
+		Class("btn w-full md:w-44 lg:w-44 "+buttonColor(color)),
+		//x.Bind("disabled", "tourist_count == 0 || order_day == '' || order_begin == '' || "+
+		//	"order_transport == '' || order_guideid == '' || order_place == ''"),
 		Text(label),
 	)
 }

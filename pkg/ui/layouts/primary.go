@@ -171,6 +171,7 @@ func sidebarMenu(r *ui.Request) Node {
 				MenuLink(r, icons.Home(), "Dashboard", routenames.Home),
 				MenuLink(r, icons.Info(), "About", routenames.About),
 				MenuLink(r, icons.Mail(), "Contact", routenames.Contact),
+				MenuLink(r, icons.Archive(), "Расписание", routenames.Shedule),
 				//MenuLink(r, icons.Mail(), "TripTest", routenames.TripTest),
 				MenuLink(r, icons.Archive(), "Cache", routenames.Cache),
 				MenuLink(r, icons.CircleStack(), "Task", routenames.Task),

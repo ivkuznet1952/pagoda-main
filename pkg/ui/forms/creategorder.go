@@ -31,6 +31,7 @@ type (
 	}
 
 	Shedule struct {
+		Id            int
 		Resource_type int
 		Resource_id   int
 		Begin         time.Time
@@ -203,13 +204,11 @@ func (f *GOrderForm) Render(r *ui.Request, trip *GOrderParam) Node {
 			P(),
 
 			Div(
-				//x.Show("tourist_count > 0"),
 				header("Дата экскурсии"),
 			),
 			P(),
 			Div(
 				x.Show("tourist_count > 0"),
-				//Class("ml-8"),
 				MonthChooser(MonthChooserOptionsParams{
 					Value: trip.M0,
 					Options: []Choice{
@@ -222,15 +221,66 @@ func (f *GOrderForm) Render(r *ui.Request, trip *GOrderParam) Node {
 
 			Raw(calendar),
 
+			Div(
+				//x.Show("order_day != '' && begin_list.length > 0"),
+				Class("menu-title mt-3 uppercase bg-base-200 p-2"),
+				Span(Text("Период проведение экскурсии (начало/окончание)")),
+			),
+			Div(
+				Class("flex flex-wrap gap-8 ml-8"),
+				x.Show("order_day != ''"),
+				Template(
+					x.For("(item, index) in begin_list"),
+					Div(
+						Strong(
+							Class("fieldset"),
+							x.Bind("style", "item.active && { color: 'green'}"),
+							x.Text("item.value"),
+							x.On("click", "order_transport=''; order_cost = ''; order_place = ''; "+
+								"order_begin = item.value; transport_list = []; "+
+								" for (let i = 0; i < begin_list.length; i++) {"+
+								" begin_list[i].active = false;  "+
+								"}; "+
+								"; setTimeout(() => {"+
+								"item.active=true;"+
+								"transport_list = item.transports; if (transport_list.length == 1) {transport_list[0].active = true; order_transport =  transport_list[0].Id; order_cost = transport_list[0].Cost}"+
+								" order_cost = transport_list[0].Cost; order_guideid = item.guideid; "+
+								"}, 20);"),
+						),
+					),
+				),
+			),
+			//
+			Div(
+				Class("menu-title mt-3 uppercase bg-base-200 p-2"),
+				Span(Text("Транспорт")),
+			),
+			Div(
+				Class("flex flex-wrap gap-8 ml-8"),
+				Template(
+					x.For("item in transport_list"),
+					Div(
+						Strong(
+							Class("fieldset"),
+							x.Bind("style", "item.active && { color: 'green'}"),
+							x.Text("item.Name"),
+							x.On("click", "if (item.Id == 0) {order_transport = '0'} else {order_transport = item.Id; } ; order_cost = item.Cost; "+
+								" for (let i = 0; i < transport_list.length; i++) {"+
+								" transport_list[i].active = false;  "+
+								"}; "+
+								"; setTimeout(() => {item.active=true; }, 20); "),
+						),
+					),
+				),
+			),
+
 			P(),
 
 			Div(
-				//x.Show("tourist_count > 0 && order_transport != '' && order_begin != ''"),
 				header("Стоимость (Руб.)"),
 			),
 			Div(
 				x.Show("tourist_count > 0 && order_transport != '' && order_begin != ''"),
-				//Class("ml-8 text-[#fcb700]"),
 				Class("ml-8 text-green-800"),
 				Strong(x.Text("order_cost")),
 			),
@@ -252,59 +302,42 @@ func (f *GOrderForm) Render(r *ui.Request, trip *GOrderParam) Node {
 					Value:     f.Place,
 				}),
 			),
-			//Div(
+
 			InputFieldTourist(
 				InputFieldParamsTourist{
 					Name: "Tourists",
 				}),
-			//Style("background-color: gray;"),
-			//),
-			//P(),
-			//Div(
+
 			InputFieldDay(
 				InputFieldParamsDay{
 					Name: "Day",
 				}),
-			//	Style("background-color: green;"),
-			//),
-			//P(),
-			//Div(
+
 			InputFieldBegin(
 				InputFieldParamsBegin{
 					Name: "Begin",
 				}),
-			//Style("background-color: blue;"),
-			//),
-			//P(),
-			//Div(
+
 			InputFieldTransport(
 				InputFieldParamsTransport{
 					Name: "Transport",
 				}),
-			//Style("background-color: red;"),
-			//),
-			//P(),
-			///	Div(
+
 			InputFieldCost(
 				InputFieldParamsCost{
 					Name: "Cost",
 				}),
-			//Style("background-color: orange;"),
-			//	),
-			//Div(
+
 			InputFieldGuideId(
 				InputFieldParamsGuideId{
 					Name: "Guide",
 				}),
-			//Style("background-color: orange;"),
-			//),
 
 			InputFieldTripId(
 				InputFieldParamsTripId{
 					Name:  "Tripid",
 					Value: f.Tripid,
 				}),
-			//Style("background-color: orange;"),
 
 			ControlGroup(
 				FormButtonOrder(ColorInfo, "Оформить заказ"),
