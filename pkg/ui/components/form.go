@@ -23,6 +23,40 @@ type (
 		Help        string
 	}
 
+	InputFieldParamsSheduleComment struct {
+		//Form        form.Form
+		//FormField   string
+		Name      string
+		InputType string
+		Label     string
+		Value     string
+		Model     string
+		//Placeholder string
+		//Help        string
+	}
+
+	InputFieldParamsJson struct {
+		Form      form.Form
+		FormField string
+		Name      string
+		InputType string
+		Label     string
+		Value     string
+	}
+
+	InputFieldParamsTime struct {
+		//Form        form.Form
+		//FormField   string
+		Name      string
+		InputType string
+		Label     string
+		Value     string
+		Model     string
+		//Index int
+		//Placeholder string
+		//Help        string
+	}
+
 	InputFieldParamsBegin struct {
 		Name  string
 		Label string
@@ -31,6 +65,7 @@ type (
 	InputFieldParamsDay struct {
 		Name  string
 		Label string
+		Model string
 	}
 
 	InputFieldParamsTourist struct {
@@ -76,9 +111,30 @@ type (
 		Name      string
 		Label     string
 		Value     string
+		Model     string
 		Options   []Choice
 		Help      string
 	}
+
+	OptionsParamsSheduleResourcesType struct {
+		Form      form.Form
+		FormField string
+		Name      string
+		Label     string
+		Value     string
+		Model     string
+		Options   []Choice
+		Index     int
+		//Help      string
+	}
+
+	//OptionsParamsResourceType struct {
+	//	Name      string
+	//	Label     string
+	//	Value     string
+	//	Model     string
+	//	Options   []Choice
+	//}
 
 	MonthChooserOptionsParams struct {
 		//Form      form.Form
@@ -174,6 +230,7 @@ type (
 		Month     int
 		Day       int
 		Label     int
+		IsEnabled bool
 		IsVisible bool
 		IsWeekend bool
 		Shedules  []SheduleValue
@@ -185,6 +242,7 @@ type (
 		Resource_id   int
 		Begin         time.Time
 		End           time.Time
+		Comment       string
 	}
 
 	ChoiceDateShedule struct {
@@ -403,11 +461,11 @@ func TestSheduleRow(el OptionsParamsShedule) Node {
 			fields,
 		),
 
-		Div(
+		//Div(
 		//x.Show("order_day != '' && begin_list.length > 0"),
 		//Class("menu-title mt-3 uppercase bg-base-200 p-2"),
 		//Span(Text("Период проведение экскурсии (начало/окончание)")),
-		),
+		//),
 	)
 
 }
@@ -472,58 +530,6 @@ func Calendar(el OptionsParamsCalendar) Node {
 		Div(
 			calendarLine(buttons),
 		),
-		/*
-			Div(
-				//x.Show("order_day != '' && begin_list.length > 0"),
-				Class("menu-title mt-3 uppercase bg-base-200 p-2"),
-				Span(Text("Период проведение экскурсии (начало/окончание)")),
-			),
-			Div(
-				Class("flex flex-wrap gap-8 ml-8"),
-				x.Show("order_day != ''"),
-				Template(
-					x.For("(item, index) in begin_list"),
-					Div(
-						Strong(
-							x.Bind("style", "item.active && { color: 'green'}"),
-							x.Text("item.value"),
-							x.On("click", "order_transport=''; order_cost = ''; order_place = ''; "+
-								"order_begin = item.value; transport_list = []; "+
-								" for (let i = 0; i < begin_list.length; i++) {"+
-								" begin_list[i].active = false;  "+
-								"}; "+
-								"; setTimeout(() => {"+
-								"item.active=true;"+
-								"transport_list = item.transports; if (transport_list.length == 1) {transport_list[0].active = true; order_transport =  transport_list[0].Id; order_cost = transport_list[0].Cost}"+
-								" order_cost = transport_list[0].Cost; order_guideid = item.guideid; "+
-								"}, 20);"),
-						),
-					),
-				),
-			),
-			//
-			Div(
-				Class("menu-title mt-3 uppercase bg-base-200 p-2"),
-				Span(Text("Транспорт")),
-			),
-			Div(
-				Class("flex flex-wrap gap-8 ml-8"),
-				Template(
-					x.For("item in transport_list"),
-					Div(
-						Strong(
-							x.Bind("style", "item.active && { color: 'green'}"),
-							x.Text("item.Name"),
-							//x.Text("item.Id"),
-							x.On("click", "if (item.Id == 0) {order_transport = '0'} else {order_transport = item.Id; } ; order_cost = item.Cost; "+
-								" for (let i = 0; i < transport_list.length; i++) {"+
-								" transport_list[i].active = false;  "+
-								"}; "+
-								"; setTimeout(() => {item.active=true; }, 20); "),
-						),
-					),
-				),
-			), */
 	)
 
 }
@@ -547,6 +553,13 @@ func getDay(opt ChoiceDate) string {
 func getDayShedule(opt SheduleDate) string {
 	if opt.IsVisible {
 		return addZeroToStr(strconv.Itoa(opt.Year)) + "-" + addZeroToStr(strconv.Itoa(opt.Month)) + "-" + strconv.Itoa(opt.Day)
+	}
+	return ""
+}
+
+func getDaySheduleFormatted(opt SheduleDate) string {
+	if opt.IsVisible {
+		return strconv.Itoa(opt.Day) + "." + addZeroToStr(strconv.Itoa(opt.Month)) + "." + addZeroToStr(strconv.Itoa(opt.Year))
 	}
 	return ""
 }
@@ -648,8 +661,8 @@ func SheduleCalendar(el OptionsParamsSheduleCalendar) Node {
 				Strong(Text(strconv.Itoa(opt.Day))),
 			),
 			If(!opt.IsVisible, Style("color: transparent")),
-			If(opt.IsVisible && opt.IsWeekend, Style("color: red")),
-			//If(opt.IsVisible, Style("color: gray")),
+			If(opt.IsVisible && opt.IsEnabled && opt.IsWeekend, Style("color: red")),
+			If(opt.IsVisible && !opt.IsEnabled, Style("color: gray")),
 		)
 
 	}
@@ -742,14 +755,35 @@ func updateSheduleDayColor(el OptionsParamsSheduleCalendar, current int, opt She
 	if !opt.IsVisible {
 		return ""
 	}
+	if !opt.IsEnabled {
+		return ""
+	}
+	//selected_date
 
 	el.Value = current
 	s := ""
 	arr := ""
 	for j := range opt.Shedules {
-		arr = arr + "{v:'" + strconv.Itoa(opt.Shedules[j].Id) + "'}, "
+		arr = arr + "{id:'" + strconv.Itoa(opt.Shedules[j].Id) + "'," +
+			"begin:'" + addZeroToStr(strconv.Itoa(opt.Shedules[j].Begin.Hour())) + ":" +
+			addZeroToStr(strconv.Itoa(opt.Shedules[j].Begin.Minute())) + "'," +
+			"end:'" + addZeroToStr(strconv.Itoa(opt.Shedules[j].End.Hour())) + ":" +
+			addZeroToStr(strconv.Itoa(opt.Shedules[j].End.Minute())) + "'," +
+			//"type_resource: {index: '" + strconv.Itoa(j) + "', type: '" + strconv.Itoa(opt.Shedules[j].Resource_type) + "'},"
+			"type_resource: " + strconv.Itoa(opt.Shedules[j].Resource_type) + ","
+		if opt.Shedules[j].Resource_type == 1 {
+			arr = arr + "transport_id:0,"
+			arr = arr + "guide_id:" + strconv.Itoa(opt.Shedules[j].Resource_id) + ","
+		}
+		if opt.Shedules[j].Resource_type == 0 {
+			arr = arr + "transport_id:" + strconv.Itoa(opt.Shedules[j].Resource_id) + ","
+			arr = arr + "guide_id:0,"
+		}
+		arr = arr + "comment:'" + opt.Shedules[j].Comment + "'," +
+			"},"
 	}
-	s = " shedule_row = [" + arr + "];"
+	s = " shedule_row = [" + arr + "]; selected_date = '" + getDaySheduleFormatted(opt) + "';"
+	//fmt.Println(s)
 
 	l := len(el.Options)
 	ref := "$refs.dayDiv_" + strconv.Itoa(el.Month)
@@ -762,12 +796,12 @@ func updateSheduleDayColor(el OptionsParamsSheduleCalendar, current int, opt She
 
 		if el.Options[i].IsVisible {
 			if i == current {
-				//if el.Options[i].IsEnabled {
-				s = s + ref + "_" + strconv.Itoa(i) + ".style.color = 'green';"
-				//}
-				//if !el.Options[i].IsEnabled {
-				//	s = s + ref + "_" + strconv.Itoa(i) + ".style.color = 'gray';"
-				//}
+				if el.Options[i].IsEnabled {
+					s = s + ref + "_" + strconv.Itoa(i) + ".style.color = 'green';"
+				}
+				if !el.Options[i].IsEnabled {
+					s = s + ref + "_" + strconv.Itoa(i) + ".style.color = 'gray';"
+				}
 			}
 			if i != current {
 				if !el.Options[i].IsWeekend {
@@ -776,9 +810,9 @@ func updateSheduleDayColor(el OptionsParamsSheduleCalendar, current int, opt She
 				if el.Options[i].IsWeekend {
 					s = s + ref + "_" + strconv.Itoa(i) + ".style.color = 'red';"
 				}
-				//if !el.Options[i].IsEnabled {
-				//	s = s + ref + "_" + strconv.Itoa(i) + ".style.color = 'gray';"
-				//}
+				if !el.Options[i].IsEnabled {
+					s = s + ref + "_" + strconv.Itoa(i) + ".style.color = 'gray';"
+				}
 			}
 		}
 		if !el.Options[i].IsVisible {
@@ -805,6 +839,55 @@ func formFieldStatusClassCalendar(fm form.Form, formField string) string {
 
 func SelectList(el OptionsParams) Node {
 	buttons := make(Group, len(el.Options))
+
+	for i, opt := range el.Options {
+
+		buttons[i] = Option(
+			Text(opt.Label),
+			Value(opt.Value),
+			If(opt.Value == el.Value, Attr("selected")),
+		)
+	}
+
+	return Fieldset(
+		el.Label,
+		Select(
+			Class("select "+formFieldStatusClass(el.Form, el.FormField)),
+			Name(el.Name),
+			buttons,
+			x.Model(el.Model),
+		),
+		//formFieldErrors(el.Form, el.FormField),
+	)
+}
+
+func SelectListSheduleResourceValue(el OptionsParams) Node {
+	buttons := make(Group, len(el.Options))
+
+	for i, opt := range el.Options {
+
+		buttons[i] = Option(
+			Text(opt.Label),
+			Value(opt.Value),
+			If(opt.Value == el.Value, Attr("selected")),
+		)
+	}
+
+	return Fieldset(
+		el.Label,
+		Select(
+			Class("w-96 select "+formFieldStatusClass(el.Form, el.FormField)),
+			Name(el.Name),
+			buttons,
+			x.Model(el.Model),
+		),
+		//formFieldErrors(el.Form, el.FormField),
+	)
+}
+
+func SelectListSheduleResourceType(el OptionsParamsSheduleResourcesType) Node {
+	buttons := make(Group, len(el.Options))
+
 	for i, opt := range el.Options {
 		buttons[i] = Option(
 			Text(opt.Label),
@@ -819,8 +902,11 @@ func SelectList(el OptionsParams) Node {
 			Class("select "+formFieldStatusClass(el.Form, el.FormField)),
 			Name(el.Name),
 			buttons,
+			x.Model(el.Model),
+			//x.On("click", "if (type_resource == 0) {shedule_row[xindex].transport_id = 0}; if (type_resource == 1) {shedule_row[xindex].guide_id = 0};"),
+			//x.On("click", "console.log($el.hasAttribute('selected'))"),
 		),
-		formFieldErrors(el.Form, el.FormField),
+		//formFieldErrors(el.Form, el.FormField),
 	)
 }
 
@@ -851,11 +937,41 @@ func InputField(el InputFieldParams) Node {
 			//Class("input "+formFieldStatusClass(el.Form, el.FormField)),
 			Class("input"),
 			Value(el.Value),
-			//x.Bind("value", "checked_month"),
 			If(el.Placeholder != "", Placeholder(el.Placeholder)),
 		),
 		//Help(el.Help),
 		formFieldErrors(el.Form, el.FormField),
+	)
+}
+
+func InputFieldSheduleComment(el InputFieldParamsSheduleComment) Node {
+	return Fieldset(
+		el.Label,
+		Input(
+			ID(el.Name),
+			Name(el.Name),
+			Type(el.InputType),
+			//Class("input "+formFieldStatusClass(el.Form, el.FormField)),
+			Class("input"),
+			Value(el.Value),
+			x.Model(el.Model),
+			//If(el.Placeholder != "", Placeholder(el.Placeholder)),
+		),
+		//Help(el.Help),
+		//formFieldErrors(el.Form, el.FormField),
+	)
+}
+
+func InputFieldTime(el InputFieldParamsTime) Node {
+	//value = el.Value
+	return Fieldset(
+		el.Label,
+		Input(
+			Name(el.Name),
+			Type(el.InputType),
+			Class("input w-24"),
+			x.Model(el.Model),
+		),
 	)
 }
 
@@ -874,9 +990,20 @@ func InputFieldDay(el InputFieldParamsDay) Node {
 	return Fieldset(
 		el.Label,
 		Input(
-			x.Model("order_day"),
+			x.Model(el.Model),
 			Name(el.Name),
 			Class("hidden"),
+		),
+	)
+}
+
+func InputFieldJson(el InputFieldParamsJson) Node {
+	return Fieldset(
+		el.Label,
+		Input(
+			x.Model("shedule_json"),
+			Name(el.Name),
+			//Class("hidden"),
 		),
 	)
 }
@@ -978,6 +1105,7 @@ func formFieldStatusClass(fm form.Form, formField string) string {
 	default:
 		return "input-success"
 	}
+
 }
 
 func formFieldErrors(fm form.Form, field string) Node {

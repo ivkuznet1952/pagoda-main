@@ -74,6 +74,7 @@ func (h *GOrderORM) Page(ctx echo.Context) error {
 			Resource_id   int
 			Begin         time.Time
 			End           time.Time
+			Comment       string
 		}
 
 		errShedule := h.orm.Shedule.Query().

@@ -36,6 +36,7 @@ type (
 		Resource_id   int
 		Begin         time.Time
 		End           time.Time
+		Comment       string
 	}
 
 	Cost struct {
@@ -222,7 +223,6 @@ func (f *GOrderForm) Render(r *ui.Request, trip *GOrderParam) Node {
 			Raw(calendar),
 
 			Div(
-				//x.Show("order_day != '' && begin_list.length > 0"),
 				Class("menu-title mt-3 uppercase bg-base-200 p-2"),
 				Span(Text("Период проведение экскурсии (начало/окончание)")),
 			),
@@ -310,7 +310,8 @@ func (f *GOrderForm) Render(r *ui.Request, trip *GOrderParam) Node {
 
 			InputFieldDay(
 				InputFieldParamsDay{
-					Name: "Day",
+					Name:  "Day",
+					Model: "order_day",
 				}),
 
 			InputFieldBegin(

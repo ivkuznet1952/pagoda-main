@@ -266,8 +266,8 @@ func (h *Handler) CustomerList(ctx echo.Context) (*EntityList, error) {
 
 	list := &EntityList{
 		Columns: []string{
-			"Firstname",
-			"Lastname",
+			"Имя",
+			"Фамилия",
 			"Phone",
 			"Comment",
 			"Active",
@@ -396,7 +396,7 @@ func (h *Handler) GCostList(ctx echo.Context) (*EntityList, error) {
 
 	list := &EntityList{
 		Columns: []string{
-			"Cost",
+			"Стоимость",
 			"Trip ID",
 			"Transport ID",
 		},

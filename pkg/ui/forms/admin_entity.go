@@ -38,7 +38,7 @@ func AdminEntity(r *ui.Request, entityType admin.EntityType, values url.Values) 
 		if !isNew && f.Immutable {
 			continue
 		}
-
+		//fmt.Println(f.Name)
 		switch f.Type {
 		case field.TypeString:
 			p := InputFieldParams{
