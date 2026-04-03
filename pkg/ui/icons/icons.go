@@ -305,7 +305,7 @@ func IconRowMinus() Node {
 }
 
 func IconDelete() Node {
-	return iconCalendar("DElete",
+	return iconCalendar("Delete",
 		El("path",
 			Attr("stroke-linecap", "round"),
 			Attr("stroke-linejoin", "round"),
@@ -314,4 +314,12 @@ func IconDelete() Node {
 	)
 }
 
-//"m14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21q.512.078 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48 48 0 0 0-3.478-.397m-12 .562q.51-.088 1.022-.165m0 0a48 48 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a52 52 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a49 49 0 0 0-7.5 0"
+func IconSave() Node {
+	return iconCalendar("Save",
+		El("path",
+			Attr("stroke-linecap", "round"),
+			Attr("stroke-linejoin", "round"),
+			Attr("d", "M17.593 3.322c1.1.128 1.907 1.077 1.907 2.185V21L12 17.25 4.5 21V5.507c0-1.108.806-2.057 1.907-2.185a48.507 48.507 0 0 1 11.186 0Z"),
+		),
+	)
+}

@@ -20,10 +20,8 @@ import (
 
 type (
 	SheduleForm struct {
-		Day       string `form:"day" validate:"required"`
-		Transport string `form:"transport"`
-		Guide     string `form:"guide"`
-		Json      string `form:"json" validate:"required"`
+		Day  string `form:"day" validate:"required"`
+		Json string `form:"json" validate:"required"`
 		form.Submission
 	}
 
@@ -49,7 +47,7 @@ type (
 	}
 )
 
-func (f *SheduleForm) Render(r *ui.Request, trip *SheduleParam) Node {
+func (f *SheduleForm) Render(r *ui.Request, sheduleParam *SheduleParam) Node {
 
 	header := func(text string) Node {
 		return Div(
@@ -58,6 +56,8 @@ func (f *SheduleForm) Render(r *ui.Request, trip *SheduleParam) Node {
 		)
 	}
 
+	//fmt.Println(f.Day)
+
 	// type of resources
 	optsType := make([]Choice, 2)
 	optsType[0] = Choice{Label: "Транспорт", Value: "0"}
@@ -65,20 +65,26 @@ func (f *SheduleForm) Render(r *ui.Request, trip *SheduleParam) Node {
 	//opts[2] = Choice{Label: "ORDER", Value: "333"}
 
 	//guide
-	optsGuide := make([]Choice, len(trip.Guides)+1)
+	optsGuide := make([]Choice, len(sheduleParam.Guides)+1)
 	optsGuide[0] = Choice{Label: "Все", Value: "0"}
-	for i := range len(trip.Guides) {
-		optsGuide[i+1] = Choice{Label: trip.Guides[i].LastName + " " + trip.Guides[i].FirstName,
-			Value: strconv.Itoa(trip.Guides[i].Id)}
+	for i := range len(sheduleParam.Guides) {
+		optsGuide[i+1] = Choice{Label: sheduleParam.Guides[i].LastName + " " + sheduleParam.Guides[i].FirstName,
+			Value: strconv.Itoa(sheduleParam.Guides[i].Id)}
 	}
 
 	//transport
-	optsTransport := make([]Choice, len(trip.Transports)+1)
+	optsTransport := make([]Choice, len(sheduleParam.Transports)+1)
 	optsTransport[0] = Choice{Label: "Все", Value: "0"}
-	for i := range len(trip.Transports) {
-		optsTransport[i+1] = Choice{Label: trip.Transports[i].Name,
-			Value: strconv.Itoa(trip.Transports[i].Id)}
+	for i := range len(sheduleParam.Transports) {
+		optsTransport[i+1] = Choice{Label: sheduleParam.Transports[i].Name,
+			Value: strconv.Itoa(sheduleParam.Transports[i].Id)}
 	}
+
+	//monthParam := 4
+	//_ = monthParam
+	//
+	//dayParam := 27
+	//_ = dayParam
 
 	return Form(
 
@@ -89,7 +95,7 @@ func (f *SheduleForm) Render(r *ui.Request, trip *SheduleParam) Node {
 		H3(Text("Расписание")),
 		P(),
 
-		If(len(trip.Guides) == 0,
+		If(len(sheduleParam.Guides) == 0,
 			Div(
 				Span(
 					Class("ml-8"),
@@ -98,8 +104,8 @@ func (f *SheduleForm) Render(r *ui.Request, trip *SheduleParam) Node {
 				Style("background-color: red;"),
 			)),
 		P(),
-		//Transport ID == 0 => on foot!!!
-		If(len(trip.Transports) == 0 || (len(trip.Transports) == 1 && trip.Transports[0].Id != 0),
+		//Transport
+		If(len(sheduleParam.Transports) == 0 || (len(sheduleParam.Transports) == 1 && sheduleParam.Transports[0].Id != 0),
 			Div(
 				Span(
 					Class("ml-8"),
@@ -112,62 +118,68 @@ func (f *SheduleForm) Render(r *ui.Request, trip *SheduleParam) Node {
 		Div(
 			x.Cloak(),
 
-			x.Data("{ shedule_json: 'json', selected_date: '', shedule_row: [], type_resource: '0', guide_id: '0', transport_id: '0', checked_month: '"+strconv.Itoa(trip.M0)+"'}"),
-			x.Init("$watch('shedule_row', value => shedule_json=JSON.stringify(shedule_row))"),
+			x.Data("{ shedule_json: '', selected_date: '', shedule_row: [], type_resource: '0', guide_id: '0', transport_id: '0', checked_month: '"+strconv.Itoa(sheduleParam.M0)+"'}"),
+			x.Init("$watch('shedule_row', value => shedule_json=JSON.stringify(shedule_row));"),
 			P(),
-			//
 
 			header("Дата"),
 
 			P(),
 			Div(
 				MonthChooser(MonthChooserOptionsParams{
-					Value: trip.M0,
+					Value: sheduleParam.M0,
 					Options: []Choice{
-						{Value: strconv.Itoa(trip.M0), Label: ui.MonthName(trip.M0) + " " + strconv.Itoa(trip.Y0)},
-						{Value: strconv.Itoa(trip.M1), Label: ui.MonthName(trip.M1) + " " + strconv.Itoa(trip.Y1)},
-						{Value: strconv.Itoa(trip.M2), Label: ui.MonthName(trip.M2) + " " + strconv.Itoa(trip.Y2)},
+						{Value: strconv.Itoa(sheduleParam.M0), Label: ui.MonthName(sheduleParam.M0) + " " + strconv.Itoa(sheduleParam.Y0)},
+						{Value: strconv.Itoa(sheduleParam.M1), Label: ui.MonthName(sheduleParam.M1) + " " + strconv.Itoa(sheduleParam.Y1)},
+						{Value: strconv.Itoa(sheduleParam.M2), Label: ui.MonthName(sheduleParam.M2) + " " + strconv.Itoa(sheduleParam.Y2)},
 					},
 				}),
 			),
-			//P(),
-			//Raw(`<TimePicker value='2024-01-01 12:00' interval='60' />`),
-			//Raw(`<div data-theme="light" className="rounded-2xl w-48" style={{ width: "390px" }}><DatePicker value="2025-01-01 12:00" /></div>`),
-			//P(),
 
 			Div(
-				x.Show("checked_month == "+strconv.Itoa(trip.M0)),
+				x.Show("checked_month == "+strconv.Itoa(sheduleParam.M0)),
 				Label(),
 				SheduleCalendar(OptionsParamsSheduleCalendar{
-					Label: "",
-					Month: trip.M0,
-					Year:  trip.Y0,
-					Options: initSheduleCalendarDays(trip.Shedules, time.Now().Day(), trip.M0, trip.Y0, trip.Guides,
-						trip.Transports, false),
+					//Form:        f,
+					//FormField:   "Day",
+					Label:       "",
+					SelectedDay: f.Day,
+					Month:       sheduleParam.M0,
+					Year:        sheduleParam.Y0,
+					Options: initSheduleCalendarDays(sheduleParam.Shedules, time.Now().Day(), sheduleParam.M0, sheduleParam.Y0, sheduleParam.Guides,
+						sheduleParam.Transports, false),
+				}),
+				//x.Ref("dayDiv_"+strconv.Itoa(el.Month)+"_"+strconv.Itoa(opt.Label)),
+				//x.Init("$refs.dayDiv_4_27.click()"),
+			),
+
+			Div(
+				x.Show("checked_month == "+strconv.Itoa(sheduleParam.M1)),
+				Label(),
+				SheduleCalendar(OptionsParamsSheduleCalendar{
+					//Form:        f,
+					//FormField:   "Day",
+					Label:       "",
+					SelectedDay: f.Day,
+					Month:       sheduleParam.M1,
+					Year:        sheduleParam.Y1,
+					Options: initSheduleCalendarDays(sheduleParam.Shedules, 0, sheduleParam.M1, sheduleParam.Y1, sheduleParam.Guides,
+						sheduleParam.Transports, false),
 				}),
 			),
 
 			Div(
-				x.Show("checked_month == "+strconv.Itoa(trip.M1)),
+				x.Show("checked_month == "+strconv.Itoa(sheduleParam.M2)),
 				Label(),
 				SheduleCalendar(OptionsParamsSheduleCalendar{
-					Label: "",
-					Month: trip.M1,
-					Year:  trip.Y1,
-					Options: initSheduleCalendarDays(trip.Shedules, 0, trip.M1, trip.Y1, trip.Guides,
-						trip.Transports, false),
-				}),
-			),
-
-			Div(
-				x.Show("checked_month == "+strconv.Itoa(trip.M2)),
-				Label(),
-				SheduleCalendar(OptionsParamsSheduleCalendar{
-					Label: "",
-					Month: trip.M2,
-					Year:  trip.Y2,
-					Options: initSheduleCalendarDays(trip.Shedules, 0, trip.M2, trip.Y2, trip.Guides,
-						trip.Transports, true),
+					//	Form:        f,
+					//	FormField:   "Day",
+					Label:       "",
+					SelectedDay: f.Day,
+					Month:       sheduleParam.M2,
+					Year:        sheduleParam.Y2,
+					Options: initSheduleCalendarDays(sheduleParam.Shedules, 0, sheduleParam.M2, sheduleParam.Y2, sheduleParam.Guides,
+						sheduleParam.Transports, true),
 				}),
 			),
 			Div(
@@ -183,114 +195,11 @@ func (f *SheduleForm) Render(r *ui.Request, trip *SheduleParam) Node {
 			),
 
 			P(Text("LIST EVENT")),
-			//Template(
-			//	x.For("s,index in shedule_row"),
-			//	Div(
-			//		Class("flex w-full gap-2 mt-5"),
-			//		Input(
-			//			x.Bind("value", "s.v"),
-			//			Style("background-color: orange;"),
-			//		),
-			//		Div(
-			//			icons.IconDelete(),
-			//			x.On("click", "shedule_row.splice(index, 1);"), // TODO
-			//x.On("click", ""+sendMessage(r.Context)),
-			//),
-			//),
-			//),
-			//P(),
-
-			//Div(
-			//	InputField(
-			//
-			//		InputFieldParams{
-			//			Name: "WAY",
-			//		}),
-			//	Style("background-color: orange;"),
-			//),
-			//OptionsParamsSheduleCalendar struct {
-			//Form    form.Form
-			//Label   string
-			//Year    int
-			//Month   int
-			//Value   int
-			//Options []SheduleDate
-			//}
-
-			//calendar = calendar + "<template x-if='checked_month == " +
-			//strconv.Itoa(trip.M0) + "'>" + convertNodeToString(SheduleCalendar(OptionsParamsSheduleCalendar{
-			//Label:   "",
-			//Month:   trip.M0,
-			//Year:    trip.Y0,
-			//Options: initSheduleCalendarDays(trip.Shedules, time.Now().Day(), trip.M0, trip.Y0, trip.Guides, trip.Transports, false),
-			//})) + "</template>"
-			//
-
-			//P(),
-
-			//Div(
-			//	x.Show("tourist_count > 0 && order_transport != '' && order_begin != ''"),
-			//header("Стоимость (Руб.)"),
-			//),
-			//Div(
-			//	x.Show("tourist_count > 0 && order_transport != '' && order_begin != ''"),
-			//	Class("ml-8 text-[#fcb700]"),
-			//Class("ml-8 text-green-800"),
-			//Strong(x.Text("order_cost")),
-			//),
-			//P(),
-			//
-			//If(trip.Trip.Type == 0, Div(
-			//	header("Место и время подачи транспорта"),
-			//)),
-			//If(trip.Trip.Type == 1, Div(
-			//	header("Место и время встречи гида"),
-			//)),
-			//Div(
-			//	x.Show("tourist_count > 0 && order_transport != '' && order_begin != ''"),
-			//	TextareaFieldPlace(TextareaFieldParamsPlace{
-			//		Form:      f,
-			//		FormField: "Place",
-			//		Name:      "place",
-			//		Label:     "",
-			//		Value:     f.Place,
-			//	}),
-			//),
-			//Div(
-			//InputFieldTourist(
-			//	InputFieldParamsTourist{
-			//		Name: "Tourists",
-			//	}),
-			//
 			InputFieldDay(
 				InputFieldParamsDay{
 					Name:  "Day",
 					Model: "selected_date",
 				}),
-
-			//InputFieldBegin(
-			//	InputFieldParamsBegin{
-			//		Name: "Begin",
-			//	}),
-			//Div(
-			InputFieldTransport(
-				InputFieldParamsTransport{
-					Name: "Transport",
-				}),
-			InputFieldTransport(
-				InputFieldParamsTransport{
-					Name: "Guide",
-				}),
-
-			//	Style("background-color: red;"),
-			//),
-			//InputFieldCost(
-			//	InputFieldParamsCost{
-			//		Name: "Cost",
-			//	}),
-			//Style("background-color: orange;"),
-
-			//),
 
 			Template(
 				x.For("item, index in shedule_row"),
@@ -372,25 +281,37 @@ func (f *SheduleForm) Render(r *ui.Request, trip *SheduleParam) Node {
 								Model:     "item.comment",
 							}),
 					),
+					//ControlGroup(
+					//	FormButtonShedule(ColorInfo, "Сохранить"),
+					//),
+					Button(
+						Class("mt-12 ml-4"),
+						icons.IconSave(),
+						//x.On("click", "alert('CLIKED'); $refs.dayDiv_4_27.click"),
+						//f.Render(r, sheduleParam),
+					),
 					Div(
-						Class("mt-12 ml-8"),
+						Class("mt-13 ml-4"),
+						Title("Удалить строку (ВНИМАНИЕ, восстановить невозможно!) "),
 						icons.IconDelete(),
 						x.On("click", "shedule_row.splice(index, 1); "),
 					),
 				),
 			),
-
+			P(),
 			Div(
 				InputFieldJson(
 					InputFieldParamsJson{
 						Name: "Json",
 					}),
-				Style("background-color: orange;"),
+				//x.Text("shedule_json"),
+				Style("background-color: red;"),
+				//x.( "alert('CLIKED'); $refs.dayDiv_4_27.click"),
 			),
 
-			ControlGroup(
-				FormButtonShedule(ColorInfo, "Сохранить"),
-			),
+			//ControlGroup(
+			//	FormButtonShedule(ColorInfo, "Сохранить"),
+			//),
 
 			//Div(
 			//	x.Text("guide_id"),

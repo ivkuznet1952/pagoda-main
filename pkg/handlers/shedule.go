@@ -35,7 +35,7 @@ func (h *SheduleORM) Init(c *services.Container) error {
 
 func (h *SheduleORM) Routes(g *echo.Group) {
 
-	g.POST("/about", h.Submit).Name = routenames.SheduleSubmit
+	g.POST("/shedule", h.Submit).Name = routenames.SheduleSubmit
 	g.GET("/shedule", h.Page).Name = routenames.Shedule
 }
 
@@ -44,20 +44,7 @@ func (h *SheduleORM) Page(ctx echo.Context) error {
 	var f = form.Get[forms.SheduleForm](ctx)
 
 	now := time.Now()
-	//dateStr := "2026-03-21"
-	//layout := "2006-01-02" // Corresponds to YYYY-MM-DD
-
-	// time.Parse returns the parsed time and a potential error
-	//now, err := time.Parse(layout, dateStr)
-	//_ = err
-
-	//if err != nil {
-	//fmt.Println("parsing date:", parsedTime)
-
 	//now := time.Date(2026, 3, 31, 0, 0, 0, 0, time.Local) // days of month
-
-	//fmt.Println("now:", now)
-	//now = parsedTime
 
 	var v []struct {
 		Id            int

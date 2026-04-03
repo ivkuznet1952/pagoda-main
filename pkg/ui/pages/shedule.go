@@ -1,15 +1,21 @@
 package pages
 
 import (
+	"fmt"
+
 	"github.com/labstack/echo/v4"
+	"github.com/mikestefanello/pagoda/pkg/msg"
 	"github.com/mikestefanello/pagoda/pkg/ui"
-	. "github.com/mikestefanello/pagoda/pkg/ui/components"
 	"github.com/mikestefanello/pagoda/pkg/ui/forms"
 	"github.com/mikestefanello/pagoda/pkg/ui/layouts"
 	. "maragu.dev/gomponents"
+	//"github.com/mikestefanello/pagoda/pkg/ui/forms"
+	//"github.com/mikestefanello/pagoda/pkg/ui/layouts"
+	//. "maragu.dev/gomponents"
 )
 
 func SheduleUs(ctx echo.Context, form *forms.SheduleForm, trip *forms.SheduleParam) error {
+
 	r := ui.NewRequest(ctx)
 	r.Title = "Расписание"
 	r.Metatags.Description = "Расписание"
@@ -45,29 +51,52 @@ func SheduleUs(ctx echo.Context, form *forms.SheduleForm, trip *forms.ShedulePar
 		//}),
 
 		Iff(!form.IsDone(), func() Node {
-
-			//h := &TripORM
-			//append( Text("DDDDDDDDDD"))
-			//form.append(test())
-
+			//fmt.Println(trip)
+			//fmt.Println("/////////////////////////  00000000000000")
 			return form.Render(r, trip)
 		}),
+		//Iff(form.IsDone(), func() Node {
+		//return Badge(ColorSuccess, "Все отлично!!!!!!")
+		//fmt.Println(trip)
+		//form.IsSubmitted()
+		//return form.Render(r, trip)
+		//}),
 		Iff(form.IsDone(), func() Node {
-			return Badge(ColorSuccess, "Все отлично!!!!!!")
+			msg.Success(ctx, fmt.Sprintf("Successfully added %s.", "n.GetName()"))
+			return form.Render(r, trip)
 		}),
 
+		//msg.Success(ctx, fmt.Sprintf("Данные сохранены успешно!")),
 		//Iff(!form.IsDone(), func() Node {
 		//var input forms.TripTest
 		//form.Submit(ctx, &input)
 		//return form.Render(r)
 		//}),
+		//x.Init("alert('CLIKED'); $refs.dayDiv_4_27.click();"),
+
 	}
-	//g = append(g, Text("DDDDDDDDDD"))
+
+	//g = append(g,
+	//        msg.Success(ctx, fmt.Sprintf("Данные сохранены успешно!"))
+	//)
+	//Template(
+
+	//x.Init("setTimeout(() => $refs.dayDiv_4_27.click(), 3000)"),
+	//x.Init("setTimeout(() => checked_month = 5, 3000)"),
+	//x.Init("alert('CLIKED'); $refs.dayDiv_4_27.click();"),
+	//Text("DDDDDDDDDD"),
+	//x.On("click", "alert('CLIKED'); $refs.dayDiv_4_27.click"),
+	//	),
+	//x.Bind("checked_month", "4"),
+	//x.Bind("selected_date", "27.04.2026"),
+
 	//err := r.Render(layouts.Primary, Group{})
 	//if err != nil {
 	//	return err
 	//}
-	r = ui.NewRequest(ctx)
-	//fmt.Println("///////////////////////// pages/triptest.go TripTestUs 20")
+
+	//r = ui.NewRequest(ctx)
+	//fmt.Println("///////////////////////// 2222222222222222 ")
+
 	return r.Render(layouts.Primary, g)
 }
