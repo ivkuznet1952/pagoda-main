@@ -1,13 +1,11 @@
 package pages
 
 import (
-	"fmt"
-
 	"github.com/labstack/echo/v4"
-	"github.com/mikestefanello/pagoda/pkg/msg"
 	"github.com/mikestefanello/pagoda/pkg/ui"
 	"github.com/mikestefanello/pagoda/pkg/ui/forms"
 	"github.com/mikestefanello/pagoda/pkg/ui/layouts"
+
 	. "maragu.dev/gomponents"
 	//"github.com/mikestefanello/pagoda/pkg/ui/forms"
 	//"github.com/mikestefanello/pagoda/pkg/ui/layouts"
@@ -62,8 +60,9 @@ func SheduleUs(ctx echo.Context, form *forms.SheduleForm, trip *forms.ShedulePar
 		//return form.Render(r, trip)
 		//}),
 		Iff(form.IsDone(), func() Node {
-			msg.Success(ctx, fmt.Sprintf("Successfully added %s.", "n.GetName()"))
+			//	msg.Success(ctx, fmt.Sprintf("Данные сохранены успешно!"))
 			return form.Render(r, trip)
+			//return Badge(ColorSuccess, "Все отлично!!!!!!")
 		}),
 
 		//msg.Success(ctx, fmt.Sprintf("Данные сохранены успешно!")),
@@ -76,12 +75,13 @@ func SheduleUs(ctx echo.Context, form *forms.SheduleForm, trip *forms.ShedulePar
 
 	}
 
-	//g = append(g,
-	//        msg.Success(ctx, fmt.Sprintf("Данные сохранены успешно!"))
+	//g = append(g, Alert(ColorSuccess, "УСПЕШНО"))
+	//g = append(g, msg.Success(ctx, fmt.Sprintf("Данные сохранены успешно!")))
+
 	//)
 	//Template(
 
-	//x.Init("setTimeout(() => $refs.dayDiv_4_27.click(), 3000)"),
+	//x.Init("setTimeout(() => show_notif = false, 3000)")
 	//x.Init("setTimeout(() => checked_month = 5, 3000)"),
 	//x.Init("alert('CLIKED'); $refs.dayDiv_4_27.click();"),
 	//Text("DDDDDDDDDD"),
@@ -95,8 +95,6 @@ func SheduleUs(ctx echo.Context, form *forms.SheduleForm, trip *forms.ShedulePar
 	//	return err
 	//}
 
-	//r = ui.NewRequest(ctx)
-	//fmt.Println("///////////////////////// 2222222222222222 ")
-
+	r = ui.NewRequest(ctx)
 	return r.Render(layouts.Primary, g)
 }

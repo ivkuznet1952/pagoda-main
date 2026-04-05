@@ -96,22 +96,6 @@ func (f *Contact) Render(r *ui.Request) Node {
 					" </template>"),
 			*/
 
-			P(Text("LIST EVENT")),
-			Template(
-				x.For("s,index in shedule_row"),
-				Div(
-					Class("flex w-full gap-2 mt-5"),
-					Input(
-						x.Bind("value", "s.v"),
-						Style("background-color: orange;"),
-					),
-					Div(
-						icons.IconDelete(),
-						x.On("click", "shedule_row.splice(index, 1)"),
-					),
-				),
-			),
-			P(),
 			Div(
 				InputFieldTest(
 					InputFieldParamsTest{
@@ -144,23 +128,6 @@ func (f *Contact) Render(r *ui.Request) Node {
 				),
 				x.On("click", ""),
 			),
-
-			//Div(
-			//	Span(
-			//Class("i-lucide-menu w-6 h-6"),
-			//Style("background-color: red;"),
-			//Text("aa"),
-			//),
-			//Raw('<span class="i-lucide-menu w-6 h-6"></span>'),
-			//),
-
-			//<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-			//<path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-			//</svg>
-			//<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-			//<path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6m3-3H9m12 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-			//</svg>
-
 		),
 		ControlGroup(
 			FormButton(ColorPrimary, "Submit"),
@@ -169,7 +136,3 @@ func (f *Contact) Render(r *ui.Request) Node {
 	)
 
 }
-
-//func add() string{
-//	return ""
-//}

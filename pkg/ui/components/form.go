@@ -37,12 +37,13 @@ type (
 	}
 
 	InputFieldParamsJson struct {
-		Form      form.Form
-		FormField string
-		Name      string
-		InputType string
-		Label     string
-		Value     string
+		//	Form      form.Form
+		//	FormField string
+		Name string
+		//	InputType string
+		Label string
+		Model string
+		//	Value     string
 	}
 
 	InputFieldParamsTime struct {
@@ -64,6 +65,12 @@ type (
 	}
 
 	InputFieldParamsDay struct {
+		Name  string
+		Label string
+		Model string
+	}
+
+	InputFieldParamsSheduleAction struct {
 		Name  string
 		Label string
 		Model string
@@ -959,14 +966,25 @@ func InputFieldDay(el InputFieldParamsDay) Node {
 	)
 }
 
+func InputFieldSheduleAction(el InputFieldParamsSheduleAction) Node {
+	return Fieldset(
+		el.Label,
+		Input(
+			x.Model(el.Model),
+			Name(el.Name),
+			//Class("hidden"),
+		),
+	)
+}
+
 func InputFieldJson(el InputFieldParamsJson) Node {
 	return Fieldset(
 		el.Label,
 		Input(
-			x.Model("shedule_json"),
+			//x.Model("shedule_json"),
+			x.Model(el.Model),
 			Name(el.Name),
-			//Class("hidden"),
-			//x.On("changed", "test($el.value)"),
+			//Type("hidden"),
 		),
 	)
 }

@@ -1,8 +1,6 @@
 package handlers
 
 import (
-	"fmt"
-
 	"github.com/labstack/echo/v4"
 	"github.com/mikestefanello/pagoda/pkg/form"
 	"github.com/mikestefanello/pagoda/pkg/routenames"
@@ -49,9 +47,9 @@ func (h *Contact) Submit(ctx echo.Context) error {
 	//fmt.Println("/////////000000 handler Submit 51:" + input.Message)
 	err := form.Submit(ctx, &input)
 	_ = err
-	fmt.Println("///////// CONTACT MESSAGE handler Submit 52: " + input.Message)
-	fmt.Println("///////// CONTACT EMAIL Submit 53: " + input.Email)
-	fmt.Println("///////// CONTACT TEST Submit 53: " + input.Test)
+	//fmt.Println("///////// CONTACT MESSAGE handler Submit 52: " + input.Message)
+	//fmt.Println("///////// CONTACT EMAIL Submit 53: " + input.Email)
+	//fmt.Println("///////// CONTACT TEST Submit 53: " + input.Test)
 	//switch err.(type) {
 	//case nil:
 	//case validator.ValidationErrors:

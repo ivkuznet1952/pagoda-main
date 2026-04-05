@@ -166,7 +166,7 @@ func (h *SheduleORM) Submit(ctx echo.Context) error {
 	fmt.Println("########################### SUBMIT")
 
 	var input forms.SheduleForm
-
+	//fmt.Println("########### Action:" + input.SAction)
 	//fmt.Println("########### Json:" + input.Json)
 
 	err := form.Submit(ctx, &input)
@@ -184,6 +184,11 @@ func (h *SheduleORM) Submit(ctx echo.Context) error {
 
 	fmt.Println("########### Day:" + input.Day)
 	fmt.Println("########### Json:" + input.Json)
+	fmt.Println("########### SAction:" + input.SAction)
+
+	//input.SAction = "update"
+	//x.Init("")
+	//msg.Success(ctx, fmt.Sprintf("Данные сохранены успешно!"))
 
 	/*
 		orderNumber, err := GetOrderNumberByID(ctx, h.orm, 1)
@@ -258,5 +263,8 @@ func (h *SheduleORM) Submit(ctx echo.Context) error {
 			fmt.Println("######## ERROR UPDATE ORDER NUMBER " + errUpdateOrderNumber.Error())
 		}
 	*/
+	//form.Clear(ctx)
+	//msg.Success(ctx, fmt.Sprintf("The task has been created. Check the logs in %d seconds.", "input.Delay"))
+	//form.Clear(ctx)
 	return h.Page(ctx)
 }

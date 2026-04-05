@@ -1,15 +1,12 @@
 package forms
 
 import (
-	"fmt"
 	"net/http"
 	"strconv"
 	"time"
 
 	x "github.com/glsubri/gomponents-alpine"
-	"github.com/labstack/echo/v4"
 	"github.com/mikestefanello/pagoda/pkg/form"
-	"github.com/mikestefanello/pagoda/pkg/msg"
 	"github.com/mikestefanello/pagoda/pkg/routenames"
 	"github.com/mikestefanello/pagoda/pkg/ui"
 	. "github.com/mikestefanello/pagoda/pkg/ui/components"
@@ -20,21 +17,13 @@ import (
 
 type (
 	SheduleForm struct {
-		Day  string `form:"day" validate:"required"`
-		Json string `form:"json" validate:"required"`
+		Day     string `form:"day" validate:"required"`
+		Json    string `form:"json" validate:"required"`
+		SAction string `form:"saction" `
 		form.Submission
 	}
 
-	//SheduleForm struct {
-	//	Day       string `form:"day" validate:"required"`
-	//	Transport string `form:"transport" validate:"required"`
-	//	Guide     string `form:"guide" validate:"required"`
-	//	Json      string `form:"json" validate:"required"`
-	//	form.Submission
-	//}
-
 	SheduleParam struct {
-		//Trip       ent.Trip
 		M0         int
 		M1         int
 		M2         int
@@ -49,14 +38,12 @@ type (
 
 func (f *SheduleForm) Render(r *ui.Request, sheduleParam *SheduleParam) Node {
 
-	header := func(text string) Node {
-		return Div(
-			Class("menu-title mt-3 uppercase bg-base-200 p-2"),
-			Span(Text(text)),
-		)
-	}
-
-	//fmt.Println(f.Day)
+	//header := func(text string) Node {
+	//	return Div(
+	//		Class("menu-title mt-3 uppercase bg-base-200 p-2"),
+	//		Span(Text(text)),
+	//	)
+	//}
 
 	// type of resources
 	optsType := make([]Choice, 2)
@@ -80,17 +67,17 @@ func (f *SheduleForm) Render(r *ui.Request, sheduleParam *SheduleParam) Node {
 			Value: strconv.Itoa(sheduleParam.Transports[i].Id)}
 	}
 
-	//monthParam := 4
-	//_ = monthParam
-	//
-	//dayParam := 27
-	//_ = dayParam
-
 	return Form(
+
+		x.Data("{}"),
 
 		ID("shedule"),
 		Method(http.MethodPost),
 		Attr("hx-post", r.Path(routenames.SheduleSubmit)),
+		//Attr("x-ref", "myForm"),
+		x.Ref("myForm"),
+		//x-ref="myForm"
+		//x.Ref("myForm"),
 
 		H3(Text("Расписание")),
 		P(),
@@ -117,12 +104,18 @@ func (f *SheduleForm) Render(r *ui.Request, sheduleParam *SheduleParam) Node {
 		P(),
 		Div(
 			x.Cloak(),
+			x.Data("{ selected_action: '', show_notif: true, shedule_json: '', selected_date: '', shedule_row: [], type_resource: '0', guide_id: '0', transport_id: '0', checked_month: '"+strconv.Itoa(sheduleParam.M0)+"'}"),
+			//x.Ref("myForm"),
 
-			x.Data("{ shedule_json: '', selected_date: '', shedule_row: [], type_resource: '0', guide_id: '0', transport_id: '0', checked_month: '"+strconv.Itoa(sheduleParam.M0)+"'}"),
-			x.Init("$watch('shedule_row', value => shedule_json=JSON.stringify(shedule_row));"),
+			x.Init("$watch('shedule_row', value =>(shedule_json=JSON.stringify(shedule_row)));"),
+
 			P(),
 
-			header("Дата"),
+			Div(
+				x.Init("setTimeout(() => show_notif=false, 5000)"),
+				x.Show("show_notif"),
+				//If(f.SAction == "update", Alert(ColorSuccess, "Данные сохранены успешно!")),
+			),
 
 			P(),
 			Div(
@@ -149,8 +142,6 @@ func (f *SheduleForm) Render(r *ui.Request, sheduleParam *SheduleParam) Node {
 					Options: initSheduleCalendarDays(sheduleParam.Shedules, time.Now().Day(), sheduleParam.M0, sheduleParam.Y0, sheduleParam.Guides,
 						sheduleParam.Transports, false),
 				}),
-				//x.Ref("dayDiv_"+strconv.Itoa(el.Month)+"_"+strconv.Itoa(opt.Label)),
-				//x.Init("$refs.dayDiv_4_27.click()"),
 			),
 
 			Div(
@@ -200,7 +191,14 @@ func (f *SheduleForm) Render(r *ui.Request, sheduleParam *SheduleParam) Node {
 					Name:  "Day",
 					Model: "selected_date",
 				}),
-
+			Div(
+				InputFieldSheduleAction(
+					InputFieldParamsSheduleAction{
+						Name:  "SAction",
+						Model: "selected_action",
+					}),
+				Style("background-color: blue;"),
+			),
 			Template(
 				x.For("item, index in shedule_row"),
 				Div(
@@ -240,7 +238,6 @@ func (f *SheduleForm) Render(r *ui.Request, sheduleParam *SheduleParam) Node {
 								Label:   "Тип",
 								Options: optsType,
 								Model:   "item.type_resource",
-								//Index: 9,
 							},
 						),
 					),
@@ -284,17 +281,21 @@ func (f *SheduleForm) Render(r *ui.Request, sheduleParam *SheduleParam) Node {
 					//ControlGroup(
 					//	FormButtonShedule(ColorInfo, "Сохранить"),
 					//),
-					Button(
+					Div(
 						Class("mt-12 ml-4"),
 						icons.IconSave(),
-						//x.On("click", "alert('CLIKED'); $refs.dayDiv_4_27.click"),
-						//f.Render(r, sheduleParam),
+						Title("Сохранить данные!"),
+						x.On("click", "shedule_json=JSON.stringify(shedule_row[index]); "+
+							"selected_action=JSON.stringify({action:'save', id: '' + item.id}); "+
+							"setTimeout(() =>$refs.myForm.requestSubmit(), 100);"),
 					),
 					Div(
-						Class("mt-13 ml-4"),
-						Title("Удалить строку (ВНИМАНИЕ, восстановить невозможно!) "),
+						Class("mt-12 ml-4"),
 						icons.IconDelete(),
-						x.On("click", "shedule_row.splice(index, 1); "),
+						Title("Удалить данные (ВНИМАНИЕ, восстановить невозможно!) "),
+						x.On("click", "shedule_json=JSON.stringify(''); "+
+							"selected_action=JSON.stringify({action:'delete', id: '' + item.id}); "+
+							"setTimeout(() => { $refs.myForm.requestSubmit(); }, 100)"),
 					),
 				),
 			),
@@ -302,11 +303,13 @@ func (f *SheduleForm) Render(r *ui.Request, sheduleParam *SheduleParam) Node {
 			Div(
 				InputFieldJson(
 					InputFieldParamsJson{
-						Name: "Json",
+						Name:  "Json",
+						Model: "shedule_json",
 					}),
 				//x.Text("shedule_json"),
+
 				Style("background-color: red;"),
-				//x.( "alert('CLIKED'); $refs.dayDiv_4_27.click"),
+				//
 			),
 
 			//ControlGroup(
@@ -323,10 +326,15 @@ func (f *SheduleForm) Render(r *ui.Request, sheduleParam *SheduleParam) Node {
 	)
 }
 
-func sendMessage(ctx echo.Context) string { // TODO check
-	msg.Success(ctx, fmt.Sprintf("Successfully delete %s.", "DELETE"))
-	return ""
-}
+//func setAction(f *SheduleForm, action string) string {
+//	f.Action = action
+//	return ""
+//}
+
+//func sendMessage(ctx echo.Context) string { // TODO check
+//	msg.Success(ctx, fmt.Sprintf("Successfully delete %s.", "DELETE"))
+//	return ""
+//}
 
 func initSheduleCalendarDays(shedules []Shedule, today int,
 	month int, year int, guides []SheduleGuide, transports []SheduleTransport, isLastMonth bool) []SheduleDate {

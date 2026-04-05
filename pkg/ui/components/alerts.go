@@ -56,7 +56,7 @@ func Alert(color Color, text string) Node {
 		Class("alert mb-2 "+class),
 		Attr("x-data", "{show: true}"),
 		Attr("x-show", "show"),
-		//Attr("@click", "show = false"),
+		Attr("@click", "show = false"),
 		Span(
 			Attr("@click", "show = false"),
 			Class("cursor-pointer"),

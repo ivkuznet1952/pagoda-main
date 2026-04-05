@@ -71,6 +71,7 @@ func GOrderUs(ctx echo.Context, form *forms.GOrderForm, trip *forms.GOrderParam)
 			//if len(transports) == 1 {
 			//	transportName = transports[0].Name
 			//}
+
 			return Badge(ColorSuccess, form.Tourists+" "+form.Day+" "+form.Begin+" "+form.Transport+" "+form.Cost)
 		}),
 
@@ -85,6 +86,7 @@ func GOrderUs(ctx echo.Context, form *forms.GOrderForm, trip *forms.GOrderParam)
 	//if err != nil {
 	//	return err
 	//}
+
 	r = ui.NewRequest(ctx)
 	//fmt.Println("///////////////////////// pages/triptest.go TripTestUs 20")
 	return r.Render(layouts.Primary, g)

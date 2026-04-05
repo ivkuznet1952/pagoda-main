@@ -38,12 +38,7 @@ func ContactUs(ctx echo.Context, form *forms.Contact) error {
 				Size:  SizeLarge,
 			})
 		}),
-		//Iff(form.IsDone(), func() Node {
-		//	return Badge(ColorSuccess, form.Message)
-		//return Div(
-		//	Text(form.Message),
-		//)
-		//}),
+
 		Iff(!form.IsDone(), func() Node {
 
 			//fmt.Println("$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$: " + form.Email)
