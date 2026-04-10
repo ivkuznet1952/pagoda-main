@@ -1,7 +1,9 @@
 package handlers
 
 import (
+	"encoding/json"
 	"fmt"
+	"sort"
 	"time"
 
 	"github.com/go-playground/validator/v10"
@@ -69,6 +71,10 @@ func (h *SheduleORM) Page(ctx echo.Context) error {
 			shedules[i] = v[i]
 		}
 	}
+	// sort by begin
+	sort.Slice(shedules, func(i, j int) bool {
+		return shedules[i].Begin.Before(shedules[j].Begin)
+	})
 
 	transports := make([]components.SheduleTransport, 0)
 
@@ -146,20 +152,42 @@ func (h *SheduleORM) Page(ctx echo.Context) error {
 	t := forms.SheduleParam{M0: m0, M1: m1, M2: m2, Y0: y0, Y1: y1, Y2: y2, Shedules: shedules,
 		Guides: guides, Transports: transports}
 	//fmt.Println("t:", t)
-
+	//test()
 	return pages.SheduleUs(ctx, f, &t)
 
 }
 
-//func GetOrderNumberByID(ctx echo.Context, client *ent.Client, orderNumberID int) (*ent.OrderNumber, error) {
-//The Get method is available on the specific entity client
-//orderNumber, err := client.OrderNumber.Get(ctx.Request().Context(), orderNumberID)
-//if err != nil {
-//	// Handle error (e.g., ent.IsNotFound(err) can check if the user wasn't found)
-//	return nil, fmt.Errorf("failed to get orderNumber: %w", err)
-//}
-//return orderNumber, nil
-//}
+func fillShedules() {
+	now := time.Now()
+	future := 12
+	_ = future
+
+	months := make([]int, future)
+	years := make([]int, future)
+	dayofmonth := make([]int, future)
+
+	m0 := int(now.Month())
+	y0 := now.Year()
+	for i := range future {
+		if i == 0 {
+			months[i] = m0
+			years[i] = y0
+		} else {
+			months[i] = months[i-1] + 1
+			years[i] = years[i-1]
+		}
+		if months[i] > 12 {
+			months[i] = 1
+			years[i] = years[i-1] + 1
+		}
+		dayofmonth[i] = time.Date(years[i], time.Month(months[i]+1), 0, 0, 0, 0, 0, time.UTC).Day()
+	}
+
+	fmt.Println(months)
+	fmt.Println(years)
+	fmt.Println(dayofmonth)
+
+}
 
 func (h *SheduleORM) Submit(ctx echo.Context) error {
 
@@ -181,6 +209,24 @@ func (h *SheduleORM) Submit(ctx echo.Context) error {
 	default:
 		return err
 	}
+
+	type saction struct {
+		Action string `json:"action,omitempty"`
+		Id     string `json:"id,omitempty"`
+	}
+
+	var p saction
+	err = json.Unmarshal([]byte(input.SAction), &p)
+	//fmt.Println(err)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println(p.Id)     // prints
+	fmt.Println(p.Action) // prints
+
+	//bolB, _ := json.Marshal(true)
+	//fmt.Println(string(bolB))
 
 	fmt.Println("########### Day:" + input.Day)
 	fmt.Println("########### Json:" + input.Json)
